@@ -1,13 +1,13 @@
 //
-//  LocalizrUITestsLaunchTests.swift
-//  LocalizrUITests
+//  localizrUITestsLaunchTests.swift
+//  localizrUITests
 //
 //  Created by Antonella Calvia on 13/04/2024.
 //
 
 import XCTest
 
-final class LocalizrUITestsLaunchTests: XCTestCase {
+final class localizrUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
