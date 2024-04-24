@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "D4FD8C66-9A19-49E5-A405-E33AB94C776A"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/MapOverlay.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "159"
+            endingLineNumber = "159"
+            landmarkName = "body"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C - f30d0de67bf3195"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #4 (CoreGraphics.CGFloat) -&gt; () in localizr.MapOverlayView.body.getter : some"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/MapOverlay.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "163"
+                  endingLineNumber = "163"
+                  offsetFromSymbolStart = "3700">
+               </Location>
+               <Location
+                  uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C - f30d0de67bf3195"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #4 (CoreGraphics.CGFloat) -&gt; () in localizr.MapOverlayView.body.getter : some"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/MapOverlay.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "163"
+                  endingLineNumber = "163"
+                  offsetFromSymbolStart = "4828">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DC6DA490-870B-44D1-946D-1E3EE028D775"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "localizr/ServiceFactory.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "53"
+            endingLineNumber = "53"
+            landmarkName = "createServiceFactory()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "09C88021-2160-4029-A6D6-BD82D16FF2B4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "localizr/ServiceFactory.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "51"
+            endingLineNumber = "51"
+            landmarkName = "createServiceFactory()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AB2DE962-175C-46B1-8DBA-FC485A4ED4F3"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "localizr/ServiceFactory.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "52"
+            endingLineNumber = "52"
+            landmarkName = "createServiceFactory()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "699D71EF-C507-4692-8BEF-3302B2D148C4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/BuildingService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "41"
+            endingLineNumber = "41"
+            landmarkName = "success(building:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "699D71EF-C507-4692-8BEF-3302B2D148C4 - 4a717a7d97e09465"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.BuildingServiceHTTP.setBuilding(building: Swift.Int) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/BuildingService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "41"
+                  endingLineNumber = "41"
+                  offsetFromSymbolStart = "60">
+               </Location>
+               <Location
+                  uuid = "699D71EF-C507-4692-8BEF-3302B2D148C4 - 80d0d38da2752d1a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "success(building: localizr.Building) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/BuildingService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "41"
+                  endingLineNumber = "41"
+                  offsetFromSymbolStart = "72">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "94E8DEA4-CC87-4C5A-B3EB-FF663FB8E9CA"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/BuildingService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "50"
+            endingLineNumber = "50"
+            landmarkName = "loadFloormap(floor:on_success:on_failure:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A089E9EF-7023-4CFF-BE95-828689188856"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/BuildingService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
+            landmarkName = "success(building:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "A089E9EF-7023-4CFF-BE95-828689188856 - 43eab109c29b701e"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.BuildingServiceDevice.loadBuilding(on_success: (localizr.Building) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/BuildingService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "38"
+                  endingLineNumber = "38"
+                  offsetFromSymbolStart = "392">
+               </Location>
+               <Location
+                  uuid = "A089E9EF-7023-4CFF-BE95-828689188856 - fe168995f1358872"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.BuildingServiceDevice.loadBuilding(on_success: (localizr.BuildingServiceDevice.LocalBuilding) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/BuildingService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45"
+                  offsetFromSymbolStart = "112">
+               </Location>
+               <Location
+                  uuid = "A089E9EF-7023-4CFF-BE95-828689188856 - fe168995f1358872"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.BuildingServiceDevice.loadBuilding(on_success: (localizr.BuildingServiceDevice.LocalBuilding) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/BuildingService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45"
+                  offsetFromSymbolStart = "200">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "871B99E8-A9B7-4685-9FBC-374AFA5E39CC"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/BuildingService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "loadBuilding(on_success:on_failure:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2332776D-8DAA-458F-8DF1-944DA59F68F5"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/NetworkUtils.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "70"
+            endingLineNumber = "70"
+            landmarkName = "getLocalJSON(path:on_success:on_failure:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6FE16470-27F7-4BE3-9BFC-972D864F9A23"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/NetworkUtils.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "66"
+            endingLineNumber = "66"
+            landmarkName = "getLocalJSON(path:on_success:on_failure:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "6FE16470-27F7-4BE3-9BFC-972D864F9A23 - f7235e2326a0f991"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.getLocalJSON&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable&gt;(path: Swift.String, on_success: (&#x3c4;_0_0) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/NetworkUtils.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "66"
+                  endingLineNumber = "66"
+                  offsetFromSymbolStart = "1428">
+               </Location>
+               <Location
+                  uuid = "6FE16470-27F7-4BE3-9BFC-972D864F9A23 - f7235e2326a0f991"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.getLocalJSON&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable&gt;(path: Swift.String, on_success: (&#x3c4;_0_0) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/NetworkUtils.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "66"
+                  endingLineNumber = "66"
+                  offsetFromSymbolStart = "1420">
+               </Location>
+               <Location
+                  uuid = "6FE16470-27F7-4BE3-9BFC-972D864F9A23 - f7235e2326a0f991"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.getLocalJSON&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable&gt;(path: Swift.String, on_success: (&#x3c4;_0_0) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/NetworkUtils.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "66"
+                  endingLineNumber = "66"
+                  offsetFromSymbolStart = "1408">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "497A76C3-1600-4C1D-8730-105B12C62AA2"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/NetworkUtils.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "71"
+            endingLineNumber = "71"
+            landmarkName = "getLocalJSON(path:on_success:on_failure:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "497A76C3-1600-4C1D-8730-105B12C62AA2 - f7235e2326a0f934"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.getLocalJSON&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable&gt;(path: Swift.String, on_success: (&#x3c4;_0_0) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/NetworkUtils.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "71"
+                  endingLineNumber = "71"
+                  offsetFromSymbolStart = "3752">
+               </Location>
+               <Location
+                  uuid = "497A76C3-1600-4C1D-8730-105B12C62AA2 - f7235e2326a0f934"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "localizr.getLocalJSON&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable&gt;(path: Swift.String, on_success: (&#x3c4;_0_0) -&gt; (), on_failure: (Swift.String) -&gt; ()) -&gt; ()"
+                  moduleName = "localizr"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/NetworkUtils.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "71"
+                  endingLineNumber = "71"
+                  offsetFromSymbolStart = "3356">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

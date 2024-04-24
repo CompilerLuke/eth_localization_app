@@ -1,13 +1,13 @@
 //
-//  LocalizrUITests.swift
-//  LocalizrUITests
+//  localizrUITests.swift
+//  localizrUITests
 //
 //  Created by Antonella Calvia on 13/04/2024.
 //
 
 import XCTest
 
-final class LocalizrUITests: XCTestCase {
+final class localizrUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
