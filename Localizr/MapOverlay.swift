@@ -1,3 +1,4 @@
+
 import SwiftUI
 import simd
 
@@ -65,7 +66,7 @@ func get_label(room: (String, [Point2])) -> String {
     return room.0
 }
 
-func RenderFloor(context: GraphicsContext, 
+func RenderFloor(context: GraphicsContext,
                  theme: MapTheme,
                  trans: Mat3,
                  floor: Floor) {
@@ -214,28 +215,3 @@ struct MapOverlay : View {
     }
 }
 
-#Preview {
-    MapOverlayView(
-        floor: Floor(min: Point2(x:0.0,y:0.0),
-                     max: Point2(x:1.0,y:1.0),outline: [
-            Point2(0.1,0.1),Point2(0.1,0.9),Point2(0.9,0.9),Point2(0.9,0)
-        ], locations: [Room(
-                            id: 0,
-                            label: "E3",
-                            desc:"Room",
-                            contour:[
-                            Point2(x:0.3,y:0.3),
-                            Point2(x:0.3,y:0.6),
-                            Point2(x:0.6,y:0.6),
-                            Point2(x:0.6,y:0.3)],
-                            type: 0
-                   )]),
-        location: Point3(0.7,0.5,0), path: [
-            Point2(0.3, 0.3),
-            Point2(0.3, 0.5),
-            Point2(0.7, 0.5)
-        ], world_to_image: Mat3(
-            [1.0,0,0],
-            [0,1.0,0],
-            [0,0,1]))
-}

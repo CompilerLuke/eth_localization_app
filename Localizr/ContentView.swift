@@ -9,98 +9,67 @@ struct LocalizeResponse : Decodable {
 class AppTheme : ObservableObject {
     var icons : Color = .black
     var fg : Color = .black
-    var card1_bg : Color = Color(red: 0.95, green: 0.95, blue: 0.95)
-    var card2_bg : Color = Color(red: 0.9, green: 0.9, blue: 0.9)
-    var card2_shadow : some View {
+    var card1_bg: Color = Color(red: 0.95, green: 0.95, blue: 0.95)
+    var card2_bg: Color = Color(red: 0.9, green: 0.9, blue: 0.9)
+    var card2_shadow: some View {
         card2_bg //.shadow(color: Color(red: 0.9, green: 0.9, blue: 0.9), radius: 5)
     }
-    var card3_bg : Color = Color(red: 0.85, green: 0.85, blue: 0.85)
-    var card3_shadow : some View {
+    var card3_bg: Color = Color(red: 0.85, green: 0.85, blue: 0.85)
+    var card3_shadow: some View {
         card3_bg //.shadow(color: Color(red: 0.85, green: 0.85, blue: 0.85), radius: 5)
     }
+    var navigationBarBackground: Color = Color(red: 0.95, green: 0.95, blue: 0.95)
+    var navigationBarForeground: Color = .black
+    var navigationBarButtonColor: Color = .blue
+    
+    func applyNavigationBarTheme() {
+           let appearance = UINavigationBar.appearance()
+           appearance.backgroundColor = UIColor(navigationBarBackground)
+           appearance.titleTextAttributes = [.foregroundColor: UIColor(navigationBarForeground)]
+           appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(navigationBarForeground)]
+           appearance.isTranslucent = false
+           appearance.shadowImage = UIImage()
+           appearance.setBackgroundImage(UIImage(), for: .default)
+       }
+
+    
 }
+
 
 enum AppRoute {
-    
+    case home
+    case roomSearch
 }
 
-struct MapARToggle : View {
-    @EnvironmentObject var theme : AppTheme
-    @EnvironmentObject var localizerSession : LocalizerSession
-    @State var mapOverlay : Bool = true
-    
-    func localize() {
-        localizerSession.localize()
-    }
-    
-    var body : some View {
-        VStack {
-            HStack(alignment: .bottom)  {
-                Button(action: localize) {
-                    Image(systemName: "mappin.circle")
-                        .font(.system(size: 30))
-                        .foregroundColor(theme.card2_bg)
-                        .cornerRadius(15)
-                }
-                .padding(10)
-                Spacer()
-                HStack {
-                    Button(action: { mapOverlay = true }) {
-                        Text("MAP")
-                    }
-                    .padding(10)
-                    .background(mapOverlay ? theme.card1_bg : theme.card2_bg)
-                    Button(action: { mapOverlay = false }) {
-                        Text("CAMERA")
-                    }
-                    .padding(10)
-                    .background(mapOverlay ? theme.card2_bg : theme.card1_bg)
-                        
-                }
-                .padding(10)
-                .background(theme.card2_bg.cornerRadius(15))
-                Spacer()
-            }
-            .padding(10)
-            .frame(alignment: .topLeading)
-            
-            ZStack(alignment: .topTrailing) {
-                if(mapOverlay) {
-                    MapOverlay()
-                    /*LocalizeOverlay()
-                        .frame(width: UIScreen.main.bounds.width*0.5, height: UIScreen.main.bounds.width*0.5)
-                        .padding(10)*/
-                } else {
-                    LocalizeOverlay()
-                    MapOverlay()
-                        .frame(width: UIScreen.main.bounds.width*0.5, height: UIScreen.main.bounds.width*0.5)
-                        .padding(10)
-                }
-            }
-        }
-    }
-}
 
-struct MainContentView : View {
-    @EnvironmentObject var theme : AppTheme
-    @EnvironmentObject var localizerSession : LocalizerSession
+
+
+
+
+
+struct MainContentView: View {
+    @EnvironmentObject var theme: AppTheme
+    @EnvironmentObject var localizerSession: LocalizerSession
+    @State private var currentPage: AppRoute = .home
     
     var body: some View {
-        ZStack(alignment: .top) {
-            MapARToggle()
-            
-            VStack{
-                Spacer()
-                SwipeupCard(content: {
-                    NavigationSearch()
-                }).background(theme.card1_bg)
+        NavigationView {
+            VStack {
+                if currentPage == .home {
+                    HomePage()
+                } else if currentPage == .roomSearch {
+                    RoomSearchPage()
+                }
             }
+            .navigationBarHidden(true)
         }
-        .frame(maxHeight: .infinity)
-        .background(theme.card1_bg)
     }
-
 }
+
+
+
+
+
 
 struct LocalizeOverlay: UIViewRepresentable {
     @EnvironmentObject var localizerSession : LocalizerSession

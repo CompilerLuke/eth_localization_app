@@ -1,17 +1,10 @@
-//
-//  MapService.swift
-//  localizr
-//
-//  Created by Antonella Calvia on 18/04/2024.
-//
-
 import Foundation
 
+
 class BuildingService : ObservableObject {
-    func loadFloormap(floor: String, on_success: @escaping (Floor) -> (), on_failure: @escaping (String) -> ()) -> Void {
-        assert(false);
-    }
-    
+    func loadFloormap(floor: String, on_success: @escaping (Floor) -> (), on_failure: @escaping (String) -> ()) {
+            assert(false)
+        }
     func queryLocations(name: String, on_success: @escaping ([Location]) -> (), on_failure: @escaping (String) -> ()) -> Void {
         assert(false);
     }
@@ -84,5 +77,3 @@ class BuildingServiceHTTP : BuildingService {
         getRequest(path: "\(serverURL)map?building=\(building)&matches=\(name)", on_success: get_locations, on_failure: on_failure)
     }
 }
-
-
