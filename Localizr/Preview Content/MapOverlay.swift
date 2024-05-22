@@ -1,16 +1,31 @@
 import SwiftUI
 import simd
+import SwiftGraph
 
 typealias Mat3 = simd_double3x3
 typealias Point2 = simd_double2
 typealias Point3 = simd_double3
 
-
+struct WalkableArea: Decodable {
+    var walkable_areas: [[[Double]]]
+}
 
 // Utility functions
 func apply_transform(_ trans: Mat3, _ point: Point2) -> Point2 {
     let trans_point = trans * Point3(point.x, point.y, 1)
     return Point2(trans_point.x, trans_point.y)
+}
+
+
+
+func loadWalkableAreas(from fileName: String) -> WalkableArea? {
+    guard let url = Bundle.main.url(forResource: fileName, withExtension: "json"),
+          let data = try? Data(contentsOf: url),
+          let walkableArea = try? JSONDecoder().decode(WalkableArea.self, from: data) else {
+        print("Failed to load or parse JSON file.")
+        return nil
+    }
+    return walkableArea
 }
 
 func to_cg(_ trans: Mat3, _ p: Point2) -> CGPoint {
@@ -36,7 +51,7 @@ func calculateCentroid(points: [Point2]) -> Point2 {
 func RenderLocationIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, position: Point2, radius: CGFloat = 5, color: Color = .red) {
     context.fill(Path { path in
         path.addArc(center: to_cg(trans, position), radius: radius, startAngle: Angle.radians(0.0), endAngle: Angle.radians(2 * Double.pi), clockwise: true)
-    }, with: .color(theme.indicator))
+    }, with: .color(color))
 }
 
 func Polygon(trans: Mat3, points: [Point2], close: Bool = true) -> Path {
@@ -90,6 +105,7 @@ struct MapOverlayView: View {
     var theme: MapTheme = MapTheme()
     var floor: Floor?
     var location: Point3?
+    
     var path: [Point2]
     var world_to_image: Mat3
     var roomContourSet: Bool = false
@@ -101,6 +117,24 @@ struct MapOverlayView: View {
             }
         }
     }
+    var walkableAreas: WalkableArea?
+    var graph: UnweightedGraph<Point2>?
+    var startPoint: Point2 = [] {
+        didSet{
+            print("startpoint set")
+            
+        }
+    }
+    var endPoint: Point2 = [] {
+        didSet{
+            print("endpoint set")
+            
+        }
+    }
+    
+    var stops : [Point2] = []
+    
+    
     
     
     @State var scale: CGFloat = 1.0
@@ -108,6 +142,7 @@ struct MapOverlayView: View {
     @State var offset_base: Point2 = Point2(x: 0, y: 0)
     @State var offset: Point2 = Point2(x: 0, y: 0)
     @State var size: CGSize = CGSize(width: 1, height: 1)
+    
     
    
     
@@ -128,6 +163,26 @@ struct MapOverlayView: View {
                 if let fl = floor {
                     RenderFloor(context: context, theme: theme, trans: trans, floor: fl)
                 }
+                
+
+                
+                if let walkableAreas = walkableAreas {
+                                    for area in walkableAreas.walkable_areas {
+                                        let points = area.map { coord in
+                                            Point2(coord[0], coord[1])
+                                        }
+                                        let path = Polygon(trans: trans, points: points)
+                                        context.fill(path, with: .color(Color.white))
+                                    }
+                                }
+                if let walkableAreas = walkableAreas {
+                    
+                    
+                    RenderPathIndicator(context: context, theme: theme, trans: trans, waypoints:stops, thickness: 2, stroke: .red)
+                    //let mst = graph.mst()
+                    
+                }
+                RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(16.0, 12.0), radius: 10, color: .blue)
                 
                 if !roomContour.isEmpty {
                     let centroid = calculateCentroid(points: roomContour)
@@ -205,6 +260,7 @@ struct MapOverlayView: View {
                         if newValue {
                             // Perform action when roomContourSet is true
                             centerMapOnCentroid()
+                            
                         }
             }
         }
@@ -240,6 +296,11 @@ struct MapOverlay: View {
     @State private var floor: Floor?
     @State private var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
     @State private var roomContour: [Point2] = []
+    @State private var walkableAreas: WalkableArea?
+    @State private var graph: UnweightedGraph<Point2>?
+    @State private var startPoint: Point2 = Point2(16.0, 12.0)
+    @State private var endPoint: Point2 = Point2(16.0, 12.0)
+    @State private var stops: [Point2] = []
     
     
     func loadMap() {
@@ -253,11 +314,34 @@ struct MapOverlay: View {
                 [0, (max.y - min.y), -min.y],
                 [0, 0, 1]
             ).transpose
+        
             
             let world_to_image = simd_inverse(image_to_world)
             let roomContour = floor.locations.first(where: { $0.label == room })?.contour ?? []
-
+            let endPoint = calculateCentroid(points: roomContour)
+            //let endPoint = Point2(47.0, 81.0)
             
+            //let walkable_areas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
+            //print("Map loaded successfully")
+         
+            let walkableAreas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
+                    print("Map loaded successfully")
+                    
+                    
+                    
+                    if let walkableAreas = walkableAreas { // Correctly binding to walkableAreas
+                        print("hello3")
+                        let width = 100 // Your map width in points
+                        let height = 100 // Your map height in points
+                        let graph = createGraph(from: walkableAreas, width: width, height: height)
+                        let startPoint = findNearestPoint(from: startPoint, in: graph)
+                        let endPoint = findNearestPoint(from: endPoint, in: graph)
+                        print (endPoint?.x, endPoint?.y)
+                        let (distances, pathDict) = graph.dijkstra(root: startPoint!, startDistance: 0)
+                        let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint!)!, to: graph.indexOfVertex(endPoint!)!, pathDict: pathDict)
+                        let stops: [Point2] = graph.edgesToVertices(edges: path)
+                        self.stops = stops
+                    }
             
             
             DispatchQueue.main.async {
@@ -265,8 +349,9 @@ struct MapOverlay: View {
                 self.world_to_image = world_to_image
                 self.isLoading = false
                 self.roomContour = roomContour
-                print("Map loaded successfully")  // Debug statement
-            
+                self.walkableAreas = walkableAreas   // Debug statement
+                self.endPoint = endPoint
+                
             }
         }, on_failure: { error in
             self.isLoading = false
@@ -277,7 +362,7 @@ struct MapOverlay: View {
     var body: some View {
             let path: [Point2] = [] // Provide the path data if necessary
             NavigationView {
-                MapOverlayView(theme: MapTheme(), floor: floor, location: nil, path: path, world_to_image: world_to_image, roomContour: roomContour)
+                MapOverlayView(theme: MapTheme(), floor: floor, location: nil, path: path, world_to_image: world_to_image, roomContour: roomContour, walkableAreas: walkableAreas, graph: graph, startPoint: startPoint, endPoint: endPoint, stops: stops)
                     .navigationBarTitle("Destination : \(room)", displayMode: .inline)
                     
                     .onAppear {

@@ -8,6 +8,15 @@
         "branch" : "master",
         "revision" : "b54598c853303a09efe16296c099314215af9a12"
       }
+    },
+    {
+      "identity" : "swiftgraph",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/davecom/SwiftGraph.git",
+      "state" : {
+        "revision" : "76b5180a5cc32eda7f5236a756f4c1e0936311c6",
+        "version" : "3.1.0"
+      }
     }
   ],
   "version" : 2
