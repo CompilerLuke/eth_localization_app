@@ -48,7 +48,7 @@ func calculateCentroid(points: [Point2]) -> Point2 {
 }
 
 // Rendering functions
-func RenderLocationIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, position: Point2, radius: CGFloat = 5, color: Color = .red) {
+func RenderLocationIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, position: Point2, radius: CGFloat = 20, color: Color = .red) {
     context.fill(Path { path in
         path.addArc(center: to_cg(trans, position), radius: radius, startAngle: Angle.radians(0.0), endAngle: Angle.radians(2 * Double.pi), clockwise: true)
     }, with: .color(color))

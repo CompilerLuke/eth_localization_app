@@ -29,6 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let localizerSession = LocalizerSession(localizationService: localizationService)
         let navigationSession = NavigationSession(navigationService: navigationService, localizerSession: localizerSession)
+        
         let contentView = MainContentView()
             .environmentObject(localizerSession)
             .environmentObject(buildingService)

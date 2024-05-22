@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct LessonsView: View {
+struct LessonsPage: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Live now")
@@ -112,6 +112,6 @@ struct SoonCardView: View {
 
 struct LessonsView_Previews: PreviewProvider {
     static var previews: some View {
-        LessonsView()
+        LessonsPage()
     }
 }

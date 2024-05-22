@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import SwiftUI
+
 
 struct HomePage: View {
     var body: some View {
@@ -25,9 +25,9 @@ struct HomePage: View {
             
             
             
-            CustomButtonView(imageName: "graduationcap", text: "Classes of today", destination: AnyView(LessonsView()), backgroundColor: Color.white, iconColor: Color.blue)
+            CustomButtonView(imageName: "graduationcap", text: "Classes of today", destination: AnyView(LessonsPage()), backgroundColor: Color.white, iconColor: Color.blue)
             
-            CustomButtonView(imageName: "location.circle", text: "My location", destination: AnyView(Text("Location Page")), backgroundColor: Color.blue, iconColor: Color.white)
+            CustomButtonView(imageName: "location.circle", text: "My location", destination: AnyView(CameraPage()), backgroundColor: Color.blue, iconColor: Color.white)
             
             Spacer()
         }

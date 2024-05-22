@@ -39,12 +39,9 @@ class AppTheme : ObservableObject {
 enum AppRoute {
     case home
     case roomSearch
+    case localizationPage
+
 }
-
-
-
-
-
 
 
 struct MainContentView: View {
@@ -57,14 +54,14 @@ struct MainContentView: View {
             VStack {
                 if currentPage == .home {
                     HomePage()
-                } else if currentPage == .roomSearch {
-                    RoomSearchPage()
                 }
+            
             }
-            .navigationBarHidden(true)
+            .navigationBarHidden(true) // Hide the navigation bar
         }
     }
 }
+
 
 
 

@@ -5,6 +5,7 @@
 //  Created by Antonella Calvia on 18/04/2024.
 //
 
+
 import Foundation
 import ARKit
 import RealityKit
@@ -22,8 +23,20 @@ class LocalizationService {
 }
 
 class LocalizationServiceDevice : LocalizationService {
+    private var currentPosition = Point3(x: 20, y: 20, z: 0)
+    
     override func localize(image: UIImage, onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
-        // todo
+        print("hello inside localization server")
+        
+        // Increment the position
+        currentPosition.x += 1
+        currentPosition.y += 1
+        
+        // Simulate a delay
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+            let mockResponse = LocalizerResponse(pos: self.currentPosition)
+            onSuccess(mockResponse)
+        }
     }
 }
 
@@ -92,7 +105,7 @@ class LocalizationServiceHTTP : LocalizationService {
 class LocalizerSession : ObservableObject {
     weak var arView : ARView? = nil
     var localizerService : LocalizationService
-    @Published var position: Point3? = Point3(x:0,y:0,z:0)
+    @Published var position: Point3? = nil
     
     init(localizationService : LocalizationService) {
         self.localizerService = localizationService
@@ -101,13 +114,17 @@ class LocalizerSession : ObservableObject {
     func localize() {
         print("Localizing!")
         
+        #if targetEnvironment(simulator)
+        print("target environemt is simulator")
+        let image = UIImage(systemName: "house.fill")!
+        #else
         guard let img = self.arView?.session.currentFrame?.capturedImage else {
-            print("Could not aquire image")
+            print("Could not acquire image")
             return
         }
-        
         let ciimg = CIImage(cvImageBuffer: img)
         let image = UIImage(ciImage: ciimg)
+        #endif
         
         func on_success(data: LocalizerResponse) {
             DispatchQueue.main.async {
@@ -123,3 +140,5 @@ class LocalizerSession : ObservableObject {
         self.localizerService.localize(image: image, onSuccess: on_success, onFailure: on_failure)
     }
 }
+
+

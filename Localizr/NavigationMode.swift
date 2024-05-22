@@ -61,9 +61,5 @@ struct NavigationMode: View {
     }
 }
 
-struct NavigationMode_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationMode(room: "HG F 1")
-    }
-}
+
 

@@ -63,7 +63,7 @@ struct RoomSearchPage: View {
         .onAppear {
             loadRooms()
         }
-        .navigationBarTitle("Search rooms", displayMode: .inline) //1. option
+        .navigationBarTitle("", displayMode: .inline) //1. option
     }
     
     var filterButtons: [ActionSheet.Button] {
