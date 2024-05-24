@@ -103,6 +103,8 @@ func findNearestPoint(from point: Point2, in graph: WeightedGraph<Point2, Double
     return nearestPoint
 }
 
-
+func calculatePathLength(_ path: [Point2]) -> Int {
+    return path.count
+}
 
 

@@ -135,6 +135,7 @@ struct MapOverlayView: View {
     @State var offset_base: Point2 = Point2(x: 0, y: 0)
     @State var offset: Point2 = Point2(x: 0, y: 0)
     @State var size: CGSize = CGSize(width: 1, height: 1)
+    @State var pathLength: Int = 0 // Add a state property for the path length
     
     
    
@@ -259,7 +260,10 @@ struct MapOverlayView: View {
                     }
                 }
             }
+            
+            
         }
+        
         
     }
     
