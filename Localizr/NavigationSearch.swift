@@ -220,7 +220,7 @@ struct NavigationSearch: View {
     }
     
     var body: some View {
-        NavigationSearchView(searchResults: searchResults, onSearch: onSearch, navigateTo: navigate, canNavigate: localizerSession.position != nil)
+        NavigationSearchView(searchResults: searchResults, onSearch: onSearch, navigateTo: navigate, canNavigate: localizerSession.pose?.pos != nil)
     }
 }
 

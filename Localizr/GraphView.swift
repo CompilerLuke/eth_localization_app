@@ -35,7 +35,7 @@ func isPointInsidePolygon(point: Point2, polygon: [Point2]) -> Bool {
 }
 
 // Function to create a graph from walkable areas
-func createGraph(from walkableAreas: WalkableArea, width: Int, height: Int) -> WeightedGraph<Point2, Double> {
+func createGraph(from floor: Floor, width: Int, height: Int) -> WeightedGraph<Point2, Double> {
     let graph = WeightedGraph<Point2, Double>()
     
     var nodes: [[Point2?]] = Array(repeating: Array(repeating: nil, count: width), count: height)
@@ -43,7 +43,7 @@ func createGraph(from walkableAreas: WalkableArea, width: Int, height: Int) -> W
     for i in 0..<height {
         for j in 0..<width {
             let point = Point2(Double(j) / Double(width) * 100.0, Double(i) / Double(height) * 100.0)
-            let inside = walkableAreas.walkable_areas.contains { area in
+            let inside = floor.walkable_areas.contains { area in
                 isPointInsidePolygon(point: point, polygon: area.map { Point2($0[0], $0[1]) })
             }
             if inside {
@@ -103,8 +103,6 @@ func findNearestPoint(from point: Point2, in graph: WeightedGraph<Point2, Double
     return nearestPoint
 }
 
-func calculatePathLength(_ path: [Point2]) -> Int {
-    return path.count
-}
+
 
 

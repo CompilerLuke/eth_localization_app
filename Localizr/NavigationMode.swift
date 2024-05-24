@@ -33,8 +33,7 @@ struct NavigationMode: View {
                 VStack {
                     // Card to render the map
                     VStack {
-                        MapOverlay(room: room, mode: navigationMode)
-                            .frame(height: 600)
+                        MapOverlay(room: room, mode: navigationMode).frame(height: 600)
                     }
                     .background(Color.white)
                     .cornerRadius(15)
@@ -118,7 +117,7 @@ struct NavigationMode: View {
                         Spacer()
                     VStack {
                         
-                            MapOverlay(room: room, mode: navigationMode)
+                        MapOverlay(room: room, mode: navigationMode)
                             .frame(width: 200, height: 200)
                         }
                         .background(Color.white)

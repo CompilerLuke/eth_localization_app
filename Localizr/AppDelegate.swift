@@ -26,14 +26,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let localizationService = factory.createLocalizationService()
         let buildingService = factory.createBuildingService()
         let navigationService = factory.createNavigationService()
-
-        let localizerSession = LocalizerSession(localizationService: localizationService)
+        //let imuService = factory.createImuService()
+        let localizerSession = LocalizerSession(localizationService: localizationService, buildingService: buildingService)
         let navigationSession = NavigationSession(navigationService: navigationService, localizerSession: localizerSession)
         
         let contentView = MainContentView()
             .environmentObject(localizerSession)
             .environmentObject(buildingService)
             .environmentObject(navigationSession)
+            //.environmentObject(imuService)
             .environmentObject(app_theme)
 
         let controller = UIHostingController(rootView: contentView)

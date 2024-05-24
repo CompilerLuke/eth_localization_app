@@ -7,54 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Localizr/MapOverlay.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "159"
-            endingLineNumber = "159"
-            landmarkName = "body"
-            landmarkType = "24">
-            <Locations>
-               <Location
-                  uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C - f30d0de67bf3195"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #4 (CoreGraphics.CGFloat) -&gt; () in localizr.MapOverlayView.body.getter : some"
-                  moduleName = "localizr"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/MapOverlay.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "163"
-                  endingLineNumber = "163"
-                  offsetFromSymbolStart = "3700">
-               </Location>
-               <Location
-                  uuid = "8F819121-07DE-4A9F-826B-67D5505DA47C - f30d0de67bf3195"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #4 (CoreGraphics.CGFloat) -&gt; () in localizr.MapOverlayView.body.getter : some"
-                  moduleName = "localizr"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/antonellacalvia/Desktop/Coding/Localizr/Localizr/MapOverlay.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "163"
-                  endingLineNumber = "163"
-                  offsetFromSymbolStart = "4828">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "DC6DA490-870B-44D1-946D-1E3EE028D775"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -62,8 +14,8 @@
             filePath = "localizr/ServiceFactory.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
             landmarkName = "createServiceFactory()"
             landmarkType = "9">
          </BreakpointContent>
@@ -78,8 +30,8 @@
             filePath = "localizr/ServiceFactory.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "51"
-            endingLineNumber = "51"
+            startingLineNumber = "60"
+            endingLineNumber = "60"
             landmarkName = "createServiceFactory()"
             landmarkType = "9">
          </BreakpointContent>
@@ -94,8 +46,8 @@
             filePath = "localizr/ServiceFactory.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "52"
-            endingLineNumber = "52"
+            startingLineNumber = "61"
+            endingLineNumber = "61"
             landmarkName = "createServiceFactory()"
             landmarkType = "9">
          </BreakpointContent>
@@ -112,7 +64,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "41"
             endingLineNumber = "41"
-            landmarkName = "success(building:)"
+            landmarkName = "failure(err:)"
             landmarkType = "9">
             <Locations>
                <Location
@@ -160,8 +112,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "50"
             endingLineNumber = "50"
-            landmarkName = "loadFloormap(floor:on_success:on_failure:)"
-            landmarkType = "7">
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -176,8 +128,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "26"
             endingLineNumber = "26"
-            landmarkName = "success(building:)"
-            landmarkType = "9">
+            landmarkName = "loadBuilding(on_success:on_failure:)"
+            landmarkType = "7">
             <Locations>
                <Location
                   uuid = "A089E9EF-7023-4CFF-BE95-828689188856 - 43eab109c29b701e"
@@ -239,8 +191,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "36"
             endingLineNumber = "36"
-            landmarkName = "loadBuilding(on_success:on_failure:)"
-            landmarkType = "7">
+            landmarkName = "success(building:)"
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -368,6 +320,22 @@
                   offsetFromSymbolStart = "3356">
                </Location>
             </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "EEC4743F-A521-47B2-9CB9-044DEDA0C499"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Localizr/PythonBindings.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "17"
+            endingLineNumber = "17"
+            landmarkName = "initializePython()"
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

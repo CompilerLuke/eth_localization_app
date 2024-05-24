@@ -12,18 +12,21 @@ import SwiftGraph
 
 // MapTheme definition
 
+/*
 struct LocalizationMapOverlayView: View {
-    @EnvironmentObject var localizerSession: LocalizerSession
     var theme: MapTheme = MapTheme()
     var floor: Floor?
-    @State var location: Point3?
     var world_to_image: Mat3
+    var pose : Pose?
+    var particles: [Pose]
     
     @State var scale: CGFloat = 1.0
     @State var base_scale: CGFloat = 1.0
     @State var offset_base: Point2 = Point2(x: 0, y: 0)
     @State var offset: Point2 = Point2(x: 0, y: 0)
     @State var size: CGSize = CGSize(width: 1, height: 1)
+    
+    var localize : () -> Void
     
     var body: some View {
         ZStack {
@@ -42,9 +45,15 @@ struct LocalizationMapOverlayView: View {
                     RenderFloor(context: context, theme: theme, trans: trans, floor: fl)
                 }
                 
-                if let loc = location {
-                    RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(loc.x, loc.y), color: Color.green)
+                if let pose = pose {
+                    let loc = Point2(pose.pos.x, pose.pos.y)
+                    var dir : Point2 = Point2(0,0)
+                    let dir3 = pose.rot.act(Point3(x:0,y:1,z:0))
+                    dir = Point2(dir3.x,dir3.y)
+                    RenderLocationIndicator(context: context, theme: theme, trans:  trans, position: loc, dir: dir, color: Color.green)
                 }
+                
+                RenderParticles(context: context, theme: theme, trans: trans, particles: particles, radius: 0.5)
             }
             .background(theme.background)
             .gesture(DragGesture().onChanged { value in offset = Point2(x: value.translation.width, y: value.translation.height) }
@@ -90,9 +99,6 @@ struct LocalizationMapOverlayView: View {
                                 .foregroundColor(.blue)
                                 .padding()
                                 .background(Color.white.opacity(0.5))
-                                
-                                
-                                
                             }
                             
                             Button(action: {
@@ -108,12 +114,10 @@ struct LocalizationMapOverlayView: View {
                                 .foregroundColor(.blue)
                                 .padding()
                                 .background(Color.white.opacity(0.5))
-                                
-                                
                             }
                             
                             Button(action: {
-                                localizerSession.localize()
+                                localize()
                             }) {
                                 VStack {
                                     Image(systemName: "location.circle")
@@ -127,25 +131,15 @@ struct LocalizationMapOverlayView: View {
                                 .cornerRadius(10)
                             }
                         }
-                        
-                        
-                    }
-                
+                }
             }
-        }
-        .onAppear {
-            if let initialLocation = localizerSession.position {
-                location = initialLocation
-            }
-        }
-        .onChange(of: localizerSession.position) { newPosition in
-            location = newPosition
         }
     }
     
     func centerMapOnCentroid() {
         print("hello1")
-        if let loc = location {
+        if let pose = pose {
+            let loc = pose.pos
             print("hello2")
             let centroid = Point2(loc.x, loc.y)
             let size = Point2(x: self.size.width, y: self.size.height)
@@ -199,7 +193,9 @@ struct LocalizationMapOverlay: View {
     
     var body: some View {
         NavigationView {
-            LocalizationMapOverlayView(theme: MapTheme(), floor: floor, location: localizerSession.position, world_to_image: world_to_image)
+            LocalizationMapOverlayView(theme: MapTheme(), floor: floor, world_to_image: world_to_image, pose: localizerSession.pose,
+                particles: self.localizerSession.public_particles,
+               localize: { self.localizerSession.localize() })
                 .navigationBarTitle("", displayMode: .inline)
                 .onAppear {
                     loadMap()
@@ -209,3 +205,4 @@ struct LocalizationMapOverlay: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+*/

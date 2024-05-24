@@ -70,29 +70,51 @@ struct MainContentView: View {
 
 struct LocalizeOverlay: UIViewRepresentable {
     @EnvironmentObject var localizerSession : LocalizerSession
+    @EnvironmentObject var navigationSession : NavigationSession
+    
+    @State var anchor : AnchorEntity?
+    @State var arrow : ModelEntity?
+    
+    init() {
+        self.anchor = nil
+        self.arrow = nil
+    }
     
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
         localizerSession.arView = arView
-
-        // Create a cube model
-        let mesh = MeshResource.generateBox(size: 0.1, cornerRadius: 0.005)
+        
+        guard let arrow_url = Bundle.main.url(forResource: "arrow", withExtension: "usdc", subdirectory: "Assets3D")
+        else {
+            print("Could not find arrow asset")
+            return arView
+        }
+        
+        guard let arrow = try? Entity.loadModel(contentsOf: arrow_url)
+        else {
+            print("Could not load arrow entity")
+            return arView
+        }
+        
         let material = SimpleMaterial(color: .gray, roughness: 0.15, isMetallic: true)
-        let model = ModelEntity(mesh: mesh, materials: [material])
-        model.transform.translation.y = 0.05
+        arrow.model?.materials = [material]
+        
+        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(1.0, 1.0)))
 
-        // Create horizontal plane anchor for the content
-        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
-        anchor.children.append(model)
-
-        // Add the horizontal plane anchor to the scene
+        anchor.children.append(arrow)
         arView.scene.anchors.append(anchor)
 
+        self.anchor = anchor
+        self.arrow = arrow
+        
         return arView
     }
     
-    func updateUIView(_ uiView: ARView, context: Context) {}
+    func updateUIView(_ uiView: ARView, context: Context) {
+        //navigationSession
+        uiView.cameraTransform
+    }
     
 }
 

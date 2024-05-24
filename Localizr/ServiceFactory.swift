@@ -11,6 +11,7 @@ protocol ServiceFactory {
     func createLocalizationService() -> LocalizationService
     func createBuildingService() -> BuildingService
     func createNavigationService() -> NavigationService
+    func createImuService() -> IMUService
 }
 
 class ServiceFactoryFrontendOnly : ServiceFactory {
@@ -24,6 +25,10 @@ class ServiceFactoryFrontendOnly : ServiceFactory {
     
     func createNavigationService() -> NavigationService {
         return NavigationServiceDevice()
+    }
+    
+    func createImuService() -> IMUService {
+        return IMUService()
     }
 }
 
@@ -44,6 +49,10 @@ class ServiceFactoryHTTP : ServiceFactory {
             
     func createNavigationService() -> NavigationService {
         return NavigationServiceHTTP(serverURL: serverURL)
+    }
+    
+    func createImuService() -> IMUService {
+        return IMUService()
     }
 }
 

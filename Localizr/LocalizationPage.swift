@@ -38,7 +38,7 @@ struct LocalizationPage: View {
                 } else if let location = location {
                     // Card to render the map
                     VStack {
-                        LocalizationMapOverlay()
+                        MapOverlay(mode: .viewing)
                             .frame(height: 600)
                     }
                     .background(Color.white)
