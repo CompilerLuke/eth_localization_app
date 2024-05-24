@@ -67,7 +67,7 @@ class NavigationSession : ObservableObject {
     }
     
     func navigate(dstLocation: Int) {
-        guard let position = localizerSession.position
+        guard let position = localizerSession.pose?.pos
         else {
             print("Not yet localized")
             return
