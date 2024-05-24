@@ -11,19 +11,20 @@ protocol ServiceFactory {
     func createLocalizationService() -> LocalizationService
     func createBuildingService() -> BuildingService
     func createNavigationService() -> NavigationService
-    func createImuService() -> IMUService
 }
 
 class ServiceFactoryFrontendOnly : ServiceFactory {
-    private lazy var localizationService : LocalizationServiceDevice = LocalizationServiceDevice()
-    private lazy var buildingService : BuildingServiceDevice = BuildingServiceDevice()
-    private lazy var navigationService : NavigationServiceDevice = { NavigationServiceDevice(buildingService: buildingService) }()
-    private lazy var imuService : IMUService = IMUService()
+    func createLocalizationService() -> LocalizationService {
+        return LocalizationServiceDevice()
+    }
     
-    func createLocalizationService() -> LocalizationService { return localizationService }
-    func createBuildingService() -> BuildingService { return buildingService }
-    func createNavigationService() -> NavigationService { return navigationService }
-    func createImuService() -> IMUService { return imuService }
+    func createBuildingService() -> BuildingService {
+        return BuildingServiceDevice()
+    }
+    
+    func createNavigationService() -> NavigationService {
+        return NavigationServiceDevice()
+    }
 }
 
 class ServiceFactoryHTTP : ServiceFactory {
@@ -43,10 +44,6 @@ class ServiceFactoryHTTP : ServiceFactory {
             
     func createNavigationService() -> NavigationService {
         return NavigationServiceHTTP(serverURL: serverURL)
-    }
-    
-    func createImuService() -> IMUService {
-        return IMUService()
     }
 }
 
