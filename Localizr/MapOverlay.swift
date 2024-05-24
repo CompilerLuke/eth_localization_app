@@ -307,6 +307,51 @@ struct MapOverlay: View {
             
             let world_to_image = simd_inverse(image_to_world)
             
+            if let room = self.room { // Correctly binding to walkableAreas
+                let roomContour = floor.locations.first(where: { $0.label == room })?.contour ?? []
+                let endPoint = calculateCentroid(points: roomContour)
+                //let endPoint = Point2(47.0, 81.0)
+
+                //let walkable_areas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
+                //print("Map loaded successfully")
+
+                print("hello3")
+                let width = 100 // Your map width in points
+                let height = 100 // Your map height in points
+                let graph = createGraph(from: floor, width: width, height: height)
+                var startPoint = Point2(startPoint.x, startPoint.y)
+                startPoint = findNearestPoint(from: startPoint, in: graph)!
+
+                if let endPoint = findNearestPoint(from: endPoint, in: graph) {
+                    //print(graph.description)
+                    let (distances, pathDict) = graph.dijkstra(root: startPoint, startDistance: 0)
+                    //print (pathDict)
+                    var nearestPoint: Point2? = nil
+                    var minDistance = Double.greatestFiniteMagnitude
+
+                    for (vertex, _) in pathDict {
+                        let currentPoint = graph.vertexAtIndex(vertex)
+                        let currentDistance = distance(currentPoint, endPoint)
+                        if currentDistance < minDistance {
+                            minDistance = currentDistance
+                            nearestPoint = currentPoint
+                        }
+                    }
+
+                    if let nearestPoint = nearestPoint {
+                        let endPointIndex = graph.indexOfVertex(nearestPoint)
+                        let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint)!, to: endPointIndex!, pathDict: pathDict)
+                        let stops: [Point2] = graph.edgesToVertices(edges: path)
+                        self.stops = stops
+                    }
+
+                    DispatchQueue.main.async {
+                        self.roomContour = roomContour
+                        self.endPoint = endPoint
+                    }
+                }
+            }
+            
             DispatchQueue.main.async {
                 self.floor = floor
                 self.world_to_image = world_to_image
