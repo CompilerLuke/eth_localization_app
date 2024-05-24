@@ -34,7 +34,7 @@ func to_cg(_ trans: Mat3, _ p: Point2) -> CGPoint {
     return CGPoint(x: p2.x, y: p2.y)
 }
 
-// Function to calculate the centroid of a polygon
+
 func calculateCentroid(points: [Point2]) -> Point2 {
     var xSum: Double = 0
     var ySum: Double = 0
@@ -284,7 +284,7 @@ struct MapOverlayView: View {
                 // Calculate the new offset to center the centroid in the view
                 offset_base = Point2(x: size.x / 2 - centroidInView.x, y: size.y / 2 - centroidInView.y)
                 
-                print("hello3")
+               
             }
         }
 }
@@ -333,10 +333,10 @@ struct MapOverlay: View {
                     
                     
                     
-            if let walkableAreas = walkableAreas { // Correctly binding to walkableAreas
+            if let walkableAreas = walkableAreas {
                 print("hello3")
-                let width = 100 // Your map width in points
-                let height = 100 // Your map height in points
+                let width = 100
+                let height = 100
                 let graph = createGraph(from: walkableAreas, width: width, height: height)
                 var startPoint = Point2(startPoint.x, startPoint.y)
                 startPoint = findNearestPoint(from: startPoint, in: graph)!
@@ -372,7 +372,7 @@ struct MapOverlay: View {
                 self.world_to_image = world_to_image
                 self.isLoading = false
                 self.roomContour = roomContour
-                self.walkableAreas = walkableAreas   // Debug statement
+                self.walkableAreas = walkableAreas  
                 self.endPoint = endPoint
                 
             }
