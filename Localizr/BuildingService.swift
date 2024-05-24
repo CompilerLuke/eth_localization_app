@@ -33,6 +33,7 @@ class BuildingServiceDevice : BuildingService {
     override func loadFloormap(floor: String, on_success: @escaping (Floor) -> (), on_failure: @escaping (String) -> ()) {
         func success(building: Building) {
             self.building = building
+            print("Building loaded")
             on_success(building.floors[0])
         }
         

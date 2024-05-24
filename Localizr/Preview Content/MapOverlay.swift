@@ -19,6 +19,7 @@ func apply_transform(_ trans: Mat3, _ point: Point2) -> Point2 {
 
 
 func loadWalkableAreas(from fileName: String) -> WalkableArea? {
+    print("hello inside loading walkable area")
     guard let url = Bundle.main.url(forResource: fileName, withExtension: "json"),
           let data = try? Data(contentsOf: url),
           let walkableArea = try? JSONDecoder().decode(WalkableArea.self, from: data) else {
@@ -105,9 +106,9 @@ struct MapOverlayView: View {
     var theme: MapTheme = MapTheme()
     var floor: Floor?
     var location: Point3?
-    
     var path: [Point2]
     var world_to_image: Mat3
+    var mode : NavigationModeState
     var roomContourSet: Bool = false
     var roomContour: [Point2]  {
         didSet {
@@ -118,13 +119,6 @@ struct MapOverlayView: View {
         }
     }
     var walkableAreas: WalkableArea?
-    var graph: UnweightedGraph<Point2>?
-    var startPoint: Point2 = [] {
-        didSet{
-            print("startpoint set")
-            
-        }
-    }
     var endPoint: Point2 = [] {
         didSet{
             print("endpoint set")
@@ -132,7 +126,6 @@ struct MapOverlayView: View {
         }
     }
     
-    var stops : [Point2] = []
     
     
     
@@ -164,36 +157,35 @@ struct MapOverlayView: View {
                     RenderFloor(context: context, theme: theme, trans: trans, floor: fl)
                 }
                 
-
+                
                 
                 if let walkableAreas = walkableAreas {
-                                    for area in walkableAreas.walkable_areas {
-                                        let points = area.map { coord in
-                                            Point2(coord[0], coord[1])
-                                        }
-                                        let path = Polygon(trans: trans, points: points)
-                                        context.fill(path, with: .color(Color.white))
-                                    }
-                                }
-                if let walkableAreas = walkableAreas {
-                    
-                    
-                    RenderPathIndicator(context: context, theme: theme, trans: trans, waypoints:stops, thickness: 2, stroke: .red)
-                    //let mst = graph.mst()
-                    
+                    for area in walkableAreas.walkable_areas {
+                        let points = area.map { coord in
+                            Point2(coord[0], coord[1])
+                        }
+                        let walkable_render = Polygon(trans: trans, points: points)
+                        context.fill(walkable_render, with: .color(Color.white))
+                    }
                 }
-                RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(16.0, 12.0), radius: 10, color: .blue)
                 
+                //render location
+                if let loc = location {
+                    RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(loc.x, loc.y), radius: 10, color: .blue)
+                }
+                
+                //render end point
                 if !roomContour.isEmpty {
                     let centroid = calculateCentroid(points: roomContour)
                     RenderLocationIndicator(context: context, theme: theme, trans: trans, position: centroid, radius: 10, color: .red)
                 }
+                
+                //render path
                 if path.count > 0 {
                     RenderPathIndicator(context: context, theme: theme, trans: trans, waypoints: path)
                 }
-                if let loc = location {
-                    RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(loc.x, loc.y))
-                }
+                
+                
             }
             .background(theme.background)
             .gesture(DragGesture().onChanged { value in offset = Point2(x: value.translation.width, y: value.translation.height) }
@@ -205,63 +197,67 @@ struct MapOverlayView: View {
             }.onEnded { _ in base_scale *= scale; scale = 1.0 })
             
             // Zoom in/out buttons
-            VStack {
-                HStack {
-                    Spacer()
-                    VStack {
-                        Button(action: {
-                            centerMapOnCentroid()
-                            
-                        }) {
-                            Image(systemName: "mappin.and.ellipse")
-                                .foregroundColor(.white)
-                                .font(.largeTitle)
-                                .padding()
-                                .background(Color.red)
-                                .clipShape(Circle())
-                                .shadow(radius: 10)
-                        }
-                        
-                        Button(action: {
-                            scale *= 1.1
-                            base_scale *= 1.1
-                            
-                        }) {
-                            Image(systemName: "plus.magnifyingglass")
-                                .font(.largeTitle)
-                                .padding()
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 10)
-                        }
-                        
-                        
-                        Button(action: {
-                            scale *= 0.9
-                            base_scale *= 0.9
-                           
-                        }) {
-                            Image(systemName: "minus.magnifyingglass")
-                                .font(.largeTitle)
-                                .padding()
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 10)
-                        }
-                        
-                        
+            if mode == .viewing
+            {
+                VStack {
+                    HStack {
                         Spacer()
-                    }
-                    .padding(.trailing, 20)
-                }
-                Spacer()
-            }
-            .onChange(of: roomContourSet) { newValue in
-                        if newValue {
-                            // Perform action when roomContourSet is true
-                            centerMapOnCentroid()
+                        VStack {
+                            Button(action: {
+                                centerMapOnCentroid()
+                                
+                            }) {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .foregroundColor(.white)
+                                    .font(.largeTitle)
+                                    .padding()
+                                    .background(Color.red)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 10)
+                            }
                             
+                            Button(action: {
+                                scale *= 1.1
+                                base_scale *= 1.1
+                                
+                            }) {
+                                Image(systemName: "plus.magnifyingglass")
+                                    .font(.largeTitle)
+                                    .padding()
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 10)
+                            }
+                            
+                            
+                            Button(action: {
+                                scale *= 0.9
+                                base_scale *= 0.9
+                                
+                            }) {
+                                Image(systemName: "minus.magnifyingglass")
+                                    .font(.largeTitle)
+                                    .padding()
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 10)
+                            }
+                            
+                            
+                            Spacer()
                         }
+                        .padding(.trailing, 20)
+                    }
+                    Spacer()
+                    
+                }
+                .onChange(of: roomContourSet) { newValue in
+                    if newValue {
+                        // Perform action when roomContourSet is true
+                        centerMapOnCentroid()
+                        
+                    }
+                }
             }
         }
         
@@ -292,13 +288,16 @@ struct MapOverlayView: View {
 struct MapOverlay: View {
     var room: String
     @EnvironmentObject var buildingService: BuildingService
+    @EnvironmentObject var locationService: LocalizerSession
+    @EnvironmentObject var navigationService: NavigationSession
+    var mode : NavigationModeState
     @State private var isLoading: Bool = false
     @State private var floor: Floor?
     @State private var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
     @State private var roomContour: [Point2] = []
     @State private var walkableAreas: WalkableArea?
     @State private var graph: UnweightedGraph<Point2>?
-    @State private var startPoint: Point2 = Point2(16.0, 12.0)
+    @State private var startPoint: Point3 = Point3(16.0, 12.0, 1.0)
     @State private var endPoint: Point2 = Point2(16.0, 12.0)
     @State private var stops: [Point2] = []
     
@@ -306,6 +305,8 @@ struct MapOverlay: View {
     func loadMap() {
         
         isLoading = true
+        let walkableAreas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
+        print("Map loaded successfully")
         buildingService.loadFloormap(floor: "G", on_success: { floor in
             let max = floor.outline.reduce(Point2(-Double.infinity, -Double.infinity), simd_max)
             let min = floor.outline.reduce(Point2(Double.infinity, Double.infinity), simd_min)
@@ -324,24 +325,42 @@ struct MapOverlay: View {
             //let walkable_areas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
             //print("Map loaded successfully")
          
-            let walkableAreas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
-                    print("Map loaded successfully")
+            
                     
                     
                     
-                    if let walkableAreas = walkableAreas { // Correctly binding to walkableAreas
-                        print("hello3")
-                        let width = 100 // Your map width in points
-                        let height = 100 // Your map height in points
-                        let graph = createGraph(from: walkableAreas, width: width, height: height)
-                        let startPoint = findNearestPoint(from: startPoint, in: graph)
-                        let endPoint = findNearestPoint(from: endPoint, in: graph)
-                        print (endPoint?.x, endPoint?.y)
-                        let (distances, pathDict) = graph.dijkstra(root: startPoint!, startDistance: 0)
-                        let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint!)!, to: graph.indexOfVertex(endPoint!)!, pathDict: pathDict)
-                        let stops: [Point2] = graph.edgesToVertices(edges: path)
-                        self.stops = stops
+            if let walkableAreas = walkableAreas { // Correctly binding to walkableAreas
+                print("hello3")
+                let width = 100 // Your map width in points
+                let height = 100 // Your map height in points
+                let graph = createGraph(from: walkableAreas, width: width, height: height)
+                var startPoint = Point2(startPoint.x, startPoint.y)
+                startPoint = findNearestPoint(from: startPoint, in: graph)!
+                let endPoint = findNearestPoint(from: endPoint, in: graph)
+                //print(graph.description)
+                let (distances, pathDict) = graph.dijkstra(root: startPoint, startDistance: 0)
+                //print (pathDict)
+                var nearestPoint: Point2? = nil
+                var minDistance = Double.greatestFiniteMagnitude
+                
+                for (vertex, _) in pathDict {
+                    let currentPoint = graph.vertexAtIndex(vertex)
+                    let currentDistance = distance(currentPoint, endPoint!)
+                    if currentDistance < minDistance {
+                        minDistance = currentDistance
+                        nearestPoint = currentPoint
                     }
+                }
+                
+                if let nearestPoint = nearestPoint {
+                    let endPointIndex = graph.indexOfVertex(nearestPoint)
+                    let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint)!, to: endPointIndex!, pathDict: pathDict)
+                    let stops: [Point2] = graph.edgesToVertices(edges: path)
+                    self.stops = stops
+                }
+            
+               
+            }
             
             
             DispatchQueue.main.async {
@@ -360,9 +379,9 @@ struct MapOverlay: View {
     }
     
     var body: some View {
-            let path: [Point2] = [] // Provide the path data if necessary
+           
             NavigationView {
-                MapOverlayView(theme: MapTheme(), floor: floor, location: nil, path: path, world_to_image: world_to_image, roomContour: roomContour, walkableAreas: walkableAreas, graph: graph, startPoint: startPoint, endPoint: endPoint, stops: stops)
+                MapOverlayView(theme: MapTheme(), floor: floor, location: startPoint, path: stops, world_to_image: world_to_image, mode: mode, roomContour: roomContour, walkableAreas: walkableAreas, endPoint: endPoint)
                     .navigationBarTitle("Destination : \(room)", displayMode: .inline)
                     
                     .onAppear {

@@ -56,79 +56,81 @@ struct LocalizationMapOverlayView: View {
             }.onEnded { _ in base_scale *= scale; scale = 1.0 })
             
             // Navigation bar with buttons at the bottom
-            VStack {
-                HStack{
-                    Spacer()
-                    Spacer()
-                    VStack {
-                        Spacer()
-                        Button(action: {
-                            centerMapOnCentroid()
-                        }) {
-                            VStack {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.title)
-                                
-                            }
-                            .foregroundColor(.blue)
-                            .padding()
-                            .background(Color.white.opacity(0.5))
-                            
-                          
-                        }
-                        
-                        Button(action: {
-                            scale *= 1.1
-                            base_scale *= 1.1
-                        }) {
-                            VStack {
-                                Image(systemName: "plus.magnifyingglass")
-                                    .font(.title)
-                                
-                            }
-                            .foregroundColor(.blue)
-                            .padding()
-                            .background(Color.white.opacity(0.5))
-                            
-                            
-                        
-                        }
-                        
-                        Button(action: {
-                            scale *= 0.9
-                            base_scale *= 0.9
-                        }) {
-                            VStack {
-                                Image(systemName: "minus.magnifyingglass")
-                                    .font(.title)
-                                
-                                
-                            }
-                            .foregroundColor(.blue)
-                            .padding()
-                            .background(Color.white.opacity(0.5))
-                           
-                            
-                        }
-                        
-                        Button(action: {
-                            localizerSession.localize()
-                        }) {
-                            VStack {
-                                Image(systemName: "location.circle")
-                                    .font(.title)
-                                
-                            }
-                            .foregroundColor(.white)
-                            .padding()
-                            
-                            .background(Color.green)
-                            .cornerRadius(10)
-                        }
-                    }
-                    
             
-                }
+                VStack {
+                    HStack{
+                        Spacer()
+                        Spacer()
+                        VStack {
+                            Spacer()
+                            Button(action: {
+                                centerMapOnCentroid()
+                            }) {
+                                VStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .font(.title)
+                                    
+                                }
+                                .foregroundColor(.blue)
+                                .padding()
+                                .background(Color.white.opacity(0.5))
+                                
+                                
+                            }
+                            
+                            Button(action: {
+                                scale *= 1.1
+                                base_scale *= 1.1
+                            }) {
+                                VStack {
+                                    Image(systemName: "plus.magnifyingglass")
+                                        .font(.title)
+                                    
+                                }
+                                .foregroundColor(.blue)
+                                .padding()
+                                .background(Color.white.opacity(0.5))
+                                
+                                
+                                
+                            }
+                            
+                            Button(action: {
+                                scale *= 0.9
+                                base_scale *= 0.9
+                            }) {
+                                VStack {
+                                    Image(systemName: "minus.magnifyingglass")
+                                        .font(.title)
+                                    
+                                    
+                                }
+                                .foregroundColor(.blue)
+                                .padding()
+                                .background(Color.white.opacity(0.5))
+                                
+                                
+                            }
+                            
+                            Button(action: {
+                                localizerSession.localize()
+                            }) {
+                                VStack {
+                                    Image(systemName: "location.circle")
+                                        .font(.title)
+                                    
+                                }
+                                .foregroundColor(.white)
+                                .padding()
+                                
+                                .background(Color.green)
+                                .cornerRadius(10)
+                            }
+                        }
+                        
+                        
+                    }
+                
             }
         }
         .onAppear {
@@ -165,10 +167,11 @@ struct LocalizationMapOverlayView: View {
 
 struct LocalizationMapOverlay: View {
     @EnvironmentObject var buildingService: BuildingService
+    @EnvironmentObject var localizerSession: LocalizerSession
     @State private var isLoading: Bool = false
     @State private var floor: Floor?
     @State private var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
-    @EnvironmentObject var localizerSession: LocalizerSession
+    
     
     func loadMap() {
         isLoading = true
