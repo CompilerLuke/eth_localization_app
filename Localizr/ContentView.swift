@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import RealityKit
 
 struct LocalizeResponse : Decodable {
@@ -72,12 +73,59 @@ struct LocalizeOverlay: UIViewRepresentable {
     @EnvironmentObject var localizerSession : LocalizerSession
     @EnvironmentObject var navigationSession : NavigationSession
     
-    @State var anchor : AnchorEntity?
-    @State var arrow : ModelEntity?
+    @State var anchor : AnchorEntity? = nil
+    @State var arrow : ModelEntity? = nil
+    @State var arrows_placed : [ModelEntity] = []
     
-    init() {
-        self.anchor = nil
-        self.arrow = nil
+    let path_spacing : Int = 3
+    let arrow_scale : Float = 0.002
+    let arrow_count = 20
+    
+    func updateArrows(nodePath: NavigationPath?) {
+        guard let anchor : AnchorEntity = self.anchor else { return }
+        guard let nodePath = nodePath else { return }
+        guard let model = self.arrow else { return }
+        
+        let world2arkit = Pose(from: anchor.transform).inverse * localizerSession.world_to_arkit()
+        
+        var path : [Point3] = []
+        var i = 0
+        while i < min(nodePath.path.count, arrow_count*path_spacing) {
+            path.append(nodePath.path[i].pos)
+            i += path_spacing
+        }
+        
+        for i in 1..<path.count {
+            var entity : ModelEntity
+            if i < self.arrows_placed.count {
+                entity = self.arrows_placed[i-1]
+            } else {
+                entity = model.clone(recursive: true)
+                anchor.addChild(entity)
+                self.arrows_placed.append(entity)
+            }
+            
+            let pos0 = path[i-1]
+            let pos1 = path[i]
+            
+            let dir = pos1 - pos0
+            var angle = atan2(dir.y, dir.x)-Double.pi/2 // (0,1) corresponds to 0, instead of the trigonometric (1,0)
+            angle += Double.pi // orient arrow
+            
+            let rot = Quat(angle: angle, axis: Point3(0,0,1)) * Quat(angle: Double.pi/2, axis: Point3(1,0,0))
+            var trans = world2arkit * Pose(rot: rot, pos: pos1)
+            trans.pos.z = 0
+            
+            var ar_trans = trans.transform
+            ar_trans.scale = simd_float3(arrow_scale,arrow_scale,arrow_scale)
+
+            entity.isEnabled = true
+            entity.transform = trans.transform
+        }
+        
+        for i in path.count-1..<self.arrows_placed.count {
+            self.arrows_placed[i].isEnabled = false
+        }
     }
     
     func makeUIView(context: Context) -> ARView {
@@ -97,25 +145,43 @@ struct LocalizeOverlay: UIViewRepresentable {
             return arView
         }
         
-        let material = SimpleMaterial(color: .gray, roughness: 0.15, isMetallic: true)
+        let material = SimpleMaterial(color: UIColor(red:1.0,green:1.0,blue:1.0,alpha:0.3), roughness: 1.00, isMetallic: false)
         arrow.model?.materials = [material]
         
         let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(1.0, 1.0)))
-
-        anchor.children.append(arrow)
-        arView.scene.anchors.append(anchor)
-
-        self.anchor = anchor
-        self.arrow = arrow
+        arView.scene.addAnchor(anchor)
+    
+        DispatchQueue.main.async {
+            self.arrow = arrow
+            self.anchor = anchor
+            print("Set anchor to ", self.anchor, anchor)
+        }
         
         return arView
     }
     
-    func updateUIView(_ uiView: ARView, context: Context) {
-        //navigationSession
-        uiView.cameraTransform
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
     }
     
+    class Coordinator: NSObject {
+        private var cancellable: AnyCancellable?
+        
+        init(_ parent: LocalizeOverlay) {
+            super.init()
+            self.cancellable = parent.navigationSession.$nodePath.sink { path in
+                DispatchQueue.main.async {
+                    parent.updateArrows(nodePath: path)
+                }
+            }
+        }
+        
+        deinit {
+            cancellable?.cancel()
+        }
+    }
+
+    func updateUIView(_ uiView: ARView, context: Context) {}
 }
 
 #Preview {

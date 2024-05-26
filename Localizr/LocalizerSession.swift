@@ -31,6 +31,7 @@ class LocalizationService {
 
 class LocalizationServiceDevice : LocalizationService {
     let module : LocalizationModule?
+    let max_size : Int = 800
     
     override init() {
         guard let path = Bundle.main.path(forResource: "model.pt", ofType: nil)
@@ -52,7 +53,7 @@ class LocalizationServiceDevice : LocalizationService {
         }
         
         
-        guard let (buffer, width, height) = image.asFloatArray()
+        guard let (buffer, width, height) = image.asFloatArray(max_size: max_size)
         else {
             onFailure("Could not get image array")
             return
@@ -148,9 +149,45 @@ class LocalizationServiceHTTP : LocalizationService {
     }
 }
 
-struct Pose {
+struct Pose : Equatable {
     var rot : Quat
     var pos : Point3
+    
+    init(rot: Quat, pos: Point3) {
+        self.rot = rot
+        self.pos = pos
+    }
+
+    static let canon = Quat(angle: Double.pi/2, axis: Point3(1,0,0))
+    
+    init(from: Transform) {
+        self.rot = Pose.canon * Quat(vector: Point4(from.rotation.vector)) * Pose.canon.inverse
+        self.pos = Pose.canon.act(Point3(from.translation))
+    }
+    
+    var transform : Transform {
+        let rot = Pose.canon.inverse * self.rot * Pose.canon
+        let trans = Pose.canon.inverse.act(Point3(self.pos))
+        return Transform(scale: simd_float3(1,1,1), rotation: simd_quatf(vector: simd_float4(rot.vector)), translation: simd_float3(trans))
+    }
+    
+    var inverse : Pose {
+        return Pose(
+            rot: rot.inverse,
+            pos: -rot.inverse.act(pos)
+        )
+    }
+    
+    func act(_ pos: Point3) -> Point3 {
+        return self.rot.act(pos) + self.pos
+    }
+    
+    static func *(p2: Pose, p1: Pose) -> Pose {
+        return Pose(
+            rot: p2.rot * p1.rot,
+            pos: p2.rot.act(p1.pos) + p2.pos
+        )
+    }
 }
 
 // Quaternion from orthogonal basis
@@ -183,9 +220,11 @@ class LocalizerSession : ObservableObject {
     var std_initial_pos : Double = 20
     var std_initial_rot : Double = Double.pi
     
-    var num_particles : Int = 1000
+    var num_particles : Int = 3000
     
     var regen_particles_thresh : Double = 3
+    
+    var imu_update_interval : Double
     
     struct Particle {
         var trans : Point2
@@ -213,16 +252,26 @@ class LocalizerSession : ObservableObject {
         return atan2(p2.y, p2.x)
     }
             
-    
-    init(localizationService : LocalizationService, buildingService: BuildingService, imu_update_rate : Double = 0.1) {
+    init(localizationService : LocalizationService, buildingService: BuildingService, imu_update_interval : Double = 1.0/30) {
+        self.imu_update_interval = imu_update_interval
         self.localizerService = localizationService
         self.buildingService = buildingService
         self.pose = Pose(rot: Quat.identity, pos: Point3(x:-13.8121, y:12.7905, z:0.9935))
         //self.spawn_particles(pose_weights: [1.0], poses: [pose!], std_initial_rot: std_initial_rot, std_initial_pos: std_initial_pos)
         
-        odometry_timer = Timer.scheduledTimer(timeInterval: imu_update_rate, target: self, selector: #selector(self.update_odometry_selector), userInfo: nil, repeats: true)
+        odometry_timer = Timer.scheduledTimer(timeInterval: imu_update_interval, target: self, selector: #selector(self.update_odometry_selector), userInfo: nil, repeats: true)
         
         self.buildingService.loadFloormap(floor: "E", on_success: process_walkable, on_failure: {e in })
+    }
+    
+    func arkit_to_world() -> Pose {
+        guard let pose = self.pose else { return Pose(rot: Quat.identity, pos: Point3()) }
+        return pose * last_odometry_pose.inverse
+    }
+    
+    func world_to_arkit() -> Pose {
+        guard let pose = self.pose else { return Pose(rot: Quat.identity, pos: Point3()) }
+        return last_odometry_pose * pose.inverse
     }
     
     func particle_to_pose(p: Particle) -> Pose {
@@ -271,9 +320,7 @@ class LocalizerSession : ObservableObject {
         
         
         let canon = Quat(angle: Double.pi/2, axis: Point3(1,0,0))
-        
-        let odometry_pose = Pose(rot: canon * Quat(vector: simd_double4(transform.rotation.vector)) * canon.inverse, pos: canon.act(Point3(transform.translation)))
-        
+        let odometry_pose = Pose(from: transform)
         /*print("BASIS")
         print(odometry_pose.rot.act(Point3(1,0,0)))
         print(odometry_pose.rot.act(Point3(0,1,0)))
@@ -284,7 +331,7 @@ class LocalizerSession : ObservableObject {
             last_odometry_timestamp = timestamp
             last_odometry_pose = odometry_pose
         }
-        let dt = timestamp - last_odometry_timestamp
+        let dt = min(timestamp - last_odometry_timestamp, 2*imu_update_interval) // Prevent excessive dt (e.g after breakpoint from blowing up particles)
         
         let odometry_delta = Pose(rot: (odometry_pose.rot * last_odometry_pose.rot.inverse).normalized, pos: odometry_pose.pos - last_odometry_pose.pos)
         
@@ -305,8 +352,8 @@ class LocalizerSession : ObservableObject {
     }
     
     func propagate(odometry_delta: Pose, dt: Double) {
-        var new_particles : [Particle] = []
-        for var p in particles {
+        for i in 0..<particles.count {
+            var p = particles[i]
             let rand_rot : Double = dt*std_noise_rot*generateGaussian()
             let rand_pos = Point2(
                 x: dt*std_noise_pos*generateGaussian(),
@@ -318,10 +365,8 @@ class LocalizerSession : ObservableObject {
             p.rel_heading += rand_rot
             p.trans += Point2(pos_delta.x,pos_delta.y) + rand_pos;
             
-            new_particles.append(p)
+            particles[i] = p
         }
-        
-        self.particles = new_particles
     }
     
     func update_belief() {
@@ -489,7 +534,7 @@ class LocalizerSession : ObservableObject {
             if(walkable_area.is_walkable(point: Point2(x:pose.pos.x,y:pose.pos.y))) {
                 prob = 1
             } else {
-                prob = 0.5
+                prob = 0.3
             }
             
             let new_weight = p1.weight * prob
@@ -521,7 +566,7 @@ class LocalizerSession : ObservableObject {
         }
     }
     
-    func localize() {
+    func localize(on_success: @escaping (Pose) -> Void = { p in }, on_failure: @escaping (String)->Void = { e in print(e) }) {
         print("Localizing!")
         
         #if targetEnvironment(simulator)
@@ -536,43 +581,29 @@ class LocalizerSession : ObservableObject {
         let image = UIImage(ciImage: ciimg)
         #endif
         
-        func on_success(data: LocalizerResponse) {
+        func on_localize(data: LocalizerResponse) {
             DispatchQueue.main.async {
-                /*if self.pose == nil {
-                    var best_pose = data.best_poses[0];
-                    for pose in data.best_poses {
-                        if pose.score > best_pose.score {
-                            best_pose = pose
-                        }
-                    }
-                    let rot = Quat(ix: best_pose.rot.x, iy: best_pose.rot.y, iz: best_pose.rot.z, r: best_pose.rot.w)
-                    let pose = Pose(rot: rot,pos:best_pose.pos)
-                    print("New location ", best_pose.pos.x, best_pose.pos.y)
-                    
-                    self.spawn_particles(pose: pose)
-                    self.update_pose()
-                } else {*/
-                    var curr_pose = Pose(rot: Quat.identity, pos: Point3(1000,1000,1000))
-                    if let pose = self.pose {
-                        curr_pose = pose
-                    }
+                var curr_pose = Pose(rot: Quat.identity, pos: Point3(1000,1000,1000))
+                if let pose = self.pose {
+                    curr_pose = pose
+                }
+            
+                var poses : [Pose] = []
+                var weights : [Double] = []
+            
+                var min_dist = 1000.0
                 
-                    var poses : [Pose] = []
-                    var weights : [Double] = []
-                
-                    var min_dist = 1000.0
+                for pose in data.best_poses {
+                    let p = Pose(
+                        rot:Quat(ix: pose.rot.x, iy: pose.rot.y, iz: pose.rot.z, r: pose.rot.w),
+                        pos:pose.pos
+                    )
+                    poses.append(p)
+                    weights.append(pose.score)
+                    min_dist = min(min_dist, simd_length(p.pos - curr_pose.pos))
+                }
                     
-                    for pose in data.best_poses {
-                        let p = Pose(
-                            rot:Quat(ix: pose.rot.x, iy: pose.rot.y, iz: pose.rot.z, r: pose.rot.w),
-                            pos:pose.pos
-                        )
-                        poses.append(p)
-                        weights.append(pose.score)
-                        min_dist = min(min_dist, simd_length(p.pos - curr_pose.pos))
-                    }
-                    
-                    print("Applying Localize step")
+                print("Applying Localize step")
                 
                 let regen = self.particles.count == 0 || min_dist > self.regen_particles_thresh
                 if regen {
@@ -583,18 +614,12 @@ class LocalizerSession : ObservableObject {
                     self.localize_step(pose_weights: weights, poses: poses)
                     self.update_belief()
                 }
-                //}
-            
-                /*
                 
-                */
+                if let pose = self.pose { on_success(pose) }
+                else { on_failure("Unexpected error") }
             }
         }
         
-        func on_failure(err: String) {
-            print(err)
-        }
-        
-        self.localizerService.localize(image: image, onSuccess: on_success, onFailure: on_failure)
+        self.localizerService.localize(image: image, onSuccess: on_localize, onFailure: on_failure)
     }
 }

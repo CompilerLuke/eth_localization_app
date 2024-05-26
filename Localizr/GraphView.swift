@@ -44,7 +44,7 @@ func createGraph(from floor: Floor, width: Int, height: Int) -> WeightedGraph<Po
     
     for i in 0..<height {
         for j in 0..<width {
-            let point = Point2(Double(j) * delta.x + floor.min.x, Double(i) * delta.y + floor.max.y)
+            let point = Point2(Double(j) * delta.x + floor.min.x, Double(i) * delta.y + floor.min.y)
             let inside = floor.walkable_areas.contains { area in
                 isPointInsidePolygon(point: point, polygon: area.map { Point2($0[0], $0[1]) })
             }

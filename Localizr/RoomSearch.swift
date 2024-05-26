@@ -13,7 +13,8 @@ struct RoomSearchPage: View {
     @State private var searchText = ""
     @State private var selectedFloor: String? = nil
     @State private var showFilterSheet = false
-    @State private var rooms: [Room] = []
+    @EnvironmentObject var buildingService : BuildingService
+    @State private var rooms : [Room] = []
     
     var floors: [String] {
         Array(Set(rooms.map { String($0.label.prefix(1)) })).sorted()
@@ -46,8 +47,7 @@ struct RoomSearchPage: View {
             }
             .padding(.horizontal)
             
-            
-            
+
                     List(filteredRooms) { room in
                         NavigationLink(destination: NavigationMode(room: room.label)) {
                             Text(room.label)

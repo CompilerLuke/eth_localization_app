@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let navigationService = factory.createNavigationService()
         //let imuService = factory.createImuService()
         let localizerSession = LocalizerSession(localizationService: localizationService, buildingService: buildingService)
-        let navigationSession = NavigationSession(navigationService: navigationService, localizerSession: localizerSession)
+        let navigationSession = NavigationSession(navigationService: navigationService, localizerSession: localizerSession, buildingService: buildingService)
         
         let contentView = MainContentView()
             .environmentObject(localizerSession)

@@ -22,27 +22,27 @@ protocol NavigationService {
 
 class NavigationServiceDevice : NavigationService {
     var buildingService : BuildingService
+    var graph : WeightedGraph<Point2, Double>?
     
     init(buildingService : BuildingService) {
         self.buildingService = buildingService
+        
+        self.buildingService.loadFloormap(floor: "", on_success: createGraph, on_failure: { e in print("Failed to load floor") })
+    }
+    
+    func createGraph(floor: Floor) {
+        self.graph = localizr.createGraph(from: floor, width: 300, height: 300)
     }
     
     func navigate(startPoint: Point3, endPoint: Point3, onSuccess: @escaping (NavigationPath) -> Void, onFailure: @escaping (String) -> Void) {
-        self.buildingService.loadFloormap(floor: "E", on_success: { floor in
-            self.navigateFloor(floor: floor, startPoint: startPoint, endPoint: endPoint, onSuccess: onSuccess, onFailure: onFailure)
-        }, on_failure: onFailure)
-    }
-    
-    func navigateFloor(floor: Floor, startPoint: Point3, endPoint: Point3, onSuccess: @escaping (NavigationPath) -> Void, onFailure: @escaping (String) -> Void) {
-        let graph = createGraph(from: floor, width: 100, height: 100)
+        guard let graph = self.graph else { onFailure("Missing graph"); return }
+        
         var startPoint = Point2(startPoint.x, startPoint.y)
         startPoint = findNearestPoint(from: startPoint, in: graph)!
         
         guard let endPoint = findNearestPoint(from: Point2(endPoint.x,endPoint.y), in: graph)
         else {
-            DispatchQueue.main.async {
-                onFailure("Could not find end point")
-            }
+            onFailure("Could not find end point")
             return
         }
         
@@ -66,9 +66,7 @@ class NavigationServiceDevice : NavigationService {
             let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint)!, to: endPointIndex!, pathDict: pathDict)
             let stops: [Point2] = graph.edgesToVertices(edges: path)
                 
-            DispatchQueue.main.async {
-                onSuccess(NavigationPath(path: stops.map({loc in NavigationNode(pos: Point3(loc.x,loc.y,0))})))
-            }
+            onSuccess(NavigationPath(path: stops.map({loc in NavigationNode(pos: Point3(loc.x,loc.y,0))})))
         }
     }
 }
@@ -88,7 +86,8 @@ class NavigationServiceHTTP : NavigationService {
 class NavigationSession : ObservableObject {
     enum Mode {
         case notarget
-        case destinationRoom(String)
+        case calculatingPath(String)
+        case destinationRoom(String, Point3)
     }
     
     var mode : Mode
@@ -96,38 +95,44 @@ class NavigationSession : ObservableObject {
     var buildingService : BuildingService
     var localizerSession : LocalizerSession
     
-    @Published var nodePath : [NavigationNode]
+    @Published var nodePath : NavigationPath?
     
-    init(navigationService : NavigationService, localizerSession: LocalizerSession) {
+    init(navigationService : NavigationService, localizerSession: LocalizerSession, buildingService : BuildingService) {
         self.navigationService = navigationService
         self.mode = Mode.notarget
         self.localizerSession = localizerSession
-        self.nodePath = []
+        self.nodePath = nil
+        self.buildingService = buildingService
     }
     
     func navigate(startPoint: Point3, room: String) {
+        self.mode = .calculatingPath(room)
         
-        
-        self.mode = Mode.destination(dstPoint)
-        
-        func onSuccess(nodePath: NavigationPath) {
-            self.nodePath = nodePath.path
-        }
-        
-        func onFailure(err: String) {
+        buildingService.loadFloormap(floor: "", on_success: {floor in
+            let roomContour = floor.locations.first(where: { $0.label == room })?.contour ?? []
+            let endPoint = calculateCentroid(points: roomContour)
+            let endPoint3 = Point3(endPoint.x,endPoint.y,0)
             
-        }
-        
-        navigationService.navigate(srcPoint: srcPoint, dstPoint: dstPoint, onSuccess: onSuccess, onFailure: onFailure)
+            func onSuccess(nodePath: NavigationPath) {
+                self.mode = Mode.destinationRoom(room, endPoint3)
+                self.nodePath = nodePath
+            }
+            
+            func onFailure(err: String) {}
+            
+            self.navigationService.navigate(startPoint: startPoint, endPoint: endPoint3, onSuccess: onSuccess, onFailure: onFailure)
+        }, on_failure: {err in})
     }
     
-    func navigate(room: String) {
-        guard let position = localizerSession.pose?.pos
-        else {
-            print("Not yet localized")
-            return
+    func update(startPoint: Point3) {
+        let mode = self.mode
+        if case let .destinationRoom(room, endPoint) = self.mode {
+            self.mode = .calculatingPath(room)
+            
+            self.navigationService.navigate(startPoint: startPoint, endPoint: endPoint, onSuccess: { path in
+                self.mode = mode
+                self.nodePath = path
+            }, onFailure: {err in self.mode = mode })
         }
-        
-        navigate(startPoint: position, endPoint: room)
     }
 }

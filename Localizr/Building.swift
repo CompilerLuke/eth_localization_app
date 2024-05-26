@@ -1,6 +1,7 @@
 import Foundation
 import simd
 
+typealias Mat2 = simd_double2x2
 typealias Mat3 = simd_double3x3
 typealias Point2 = simd_double2
 typealias Point3 = simd_double3

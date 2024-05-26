@@ -27,11 +27,53 @@ func calculateCentroid(points: [Point2]) -> Point2 {
     return Point2(xSum / count, ySum / count)
 }
 
+// MapTheme definition
+struct MapTheme {
+    var border: Color = Color(red: 0.8, green: 0.8, blue: 0.8)
+    var path: Color = .blue
+    var indicator: Color = .red
+    var building: Color = Color(red: 0.95, green: 0.95, blue: 0.95)
+    var rooms: Color = Color(red: 0.9, green: 0.9, blue: 1.0)
+    var background: Color = Color(red: 0.9, green: 0.9, blue: 0.9)
+    var highlighted: Color = Color(red: 0.9, green: 1.0, blue: 0.9)
+    var indicator_radius: CGFloat = 30
+    var particle_radius: Double = 5
+    var path_thickness: Double = 5
+}
+
+func rotation_matrix(angle: Double) -> Mat2 {
+    return Mat2(rows: [
+        [cos(angle), -sin(angle)],
+        [sin(angle), cos(angle)],
+    ])
+}
+
+func rotate(_ axis: Point2, angle: Double) -> Point2 {
+    return rotation_matrix(angle: angle) * axis
+}
+
 // Rendering functions
-func RenderLocationIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, position: Point2, radius: CGFloat = 20, color: Color = .red) {
+func RenderLocationIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, pose: Pose, radius: CGFloat = -1, color: Color = .blue) {
+    let radius = radius == -1 ? theme.indicator_radius : radius
+    
+    let pos = Point2(pose.pos.x, pose.pos.y)
+    let dir3 = pose.rot.act(Point3(0,1,0))
+    let dir = simd_normalize(Point2(dir3.x,dir3.y))
+    
+    let dir_offset = radius*dir / trans[0][0]
+    
     context.fill(Path { path in
-        path.addArc(center: to_cg(trans, position), radius: radius, startAngle: Angle.radians(0.0), endAngle: Angle.radians(2 * Double.pi), clockwise: true)
+        path.move(to: to_cg(trans, pos + rotate(0.3*dir_offset, angle: -M_PI/2)))
+        path.addLine(to: to_cg(trans, pos + rotate(dir_offset, angle: 0)))
+        path.addLine(to: to_cg(trans, pos + rotate(0.3*dir_offset, angle: M_PI/2)))
+        //path.addArc(center: to_cg(trans, position), radius: radius, startAngle: Angle.radians(0.0), endAngle: Angle.radians(2 * Double.pi), clockwise: true)
     }, with: .color(color))
+}
+
+func RenderParticles(context: GraphicsContext, theme: MapTheme, trans: Mat3, particles: [Pose]) {
+    for p in particles {
+        RenderLocationIndicator(context: context, theme: theme, trans: trans, pose: p, radius: theme.particle_radius)
+    }
 }
 
 func Polygon(trans: Mat3, points: [Point2], close: Bool = true) -> Path {
@@ -46,8 +88,28 @@ func Polygon(trans: Mat3, points: [Point2], close: Bool = true) -> Path {
     }
 }
 
-func RenderPathIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, waypoints: [Point2], thickness: CGFloat = 2, stroke: Color = .red) {
-    context.stroke(Polygon(trans: trans, points: waypoints, close: false), with: .color(theme.path), lineWidth: 5)
+func RenderPathIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, path: NavigationPath, thickness: CGFloat = 2, stroke: Color = .red) {
+    let waypoints = path.path.map { node in Point2(node.pos.x, node.pos.y) }
+    let stride = 10
+    
+    context.stroke(Path { path in
+        path.move(to: to_cg(trans, waypoints[0]))
+        
+        var i = stride
+        while i+stride < waypoints.count {
+            let point0 = waypoints[i-stride]
+            let point1 = waypoints[i]
+            let point2 = waypoints[i+stride]
+            
+            let control1 = point0
+            let point = point1
+            let control2 = point1 - (point2-point1)
+  
+            path.addCurve(to: to_cg(trans, point), control1: to_cg(trans, control1), control2: to_cg(trans, control2))
+            i += 2*stride
+        }
+        
+    }, with: .color(theme.path), lineWidth: theme.path_thickness)
 }
 
 func RenderFloor(context: GraphicsContext, theme: MapTheme, trans: Mat3, floor: Floor) {
@@ -71,40 +133,22 @@ func RenderFloor(context: GraphicsContext, theme: MapTheme, trans: Mat3, floor: 
     }
 }
 
-// MapTheme definition
-struct MapTheme {
-    var border: Color = Color(red: 0.8, green: 0.8, blue: 0.8)
-    var path: Color = .blue
-    var indicator: Color = .red
-    var building: Color = Color(red: 0.95, green: 0.95, blue: 0.95)
-    var rooms: Color = Color(red: 0.9, green: 0.9, blue: 1.0)
-    var background: Color = Color(red: 0.9, green: 0.9, blue: 0.9)
+func RenderHighlightedRoom(context: GraphicsContext, theme: MapTheme, trans: Mat3, contour: [Point2]) {
+    let path = Polygon(trans: trans, points: contour)
+    context.fill(path, with: .color(theme.highlighted))
+    context.stroke(path, with: .color(theme.border), lineWidth: 0.3 * trans[0][0])
 }
 
 struct MapOverlayView: View {
     var theme: MapTheme = MapTheme()
     var floor: Floor?
     var pose: Pose?
-    var path: [Point2]
+    var particles: [Pose]
+    var path: NavigationPath?
     var world_to_image: Mat3
     var mode : NavigationModeState
     var localize : () -> Void
-    var roomContourSet: Bool = false
-    var roomContour: [Point2]  {
-        didSet {
-            if !roomContour.isEmpty {
-                roomContourSet = true
-                print ("room contour set")
-            }
-        }
-    }
-
-    var endPoint: Point2 = [] {
-        didSet{
-            print("endpoint set")
-            
-        }
-    }
+    var roomContour: [Point2]
     
     @State var scale: CGFloat = 1.0
     @State var base_scale: CGFloat = 1.0
@@ -115,7 +159,6 @@ struct MapOverlayView: View {
     var body: some View {
         ZStack {
             Canvas { context, size in
-                print("Canvas size: \(size)") // Debug statement
                 if size != self.size {
                     DispatchQueue.main.async { self.size = size }
                 }
@@ -135,25 +178,22 @@ struct MapOverlayView: View {
                         context.fill(walkable_render, with: .color(Color.white))
                     }
                 }
-        
-                //render location
+            
+                RenderParticles(context: context, theme: theme, trans: trans, particles: particles)
+                
                 if let pose = self.pose {
                     let loc = pose.pos
-                    RenderLocationIndicator(context: context, theme: theme, trans: trans, position: Point2(loc.x, loc.y), radius: 10, color: .blue)
+                    RenderLocationIndicator(context: context, theme: theme, trans: trans, pose: pose)
                 }
                 
-                //render end point
                 if !roomContour.isEmpty {
-                    let centroid = calculateCentroid(points: roomContour)
-                    RenderLocationIndicator(context: context, theme: theme, trans: trans, position: centroid, radius: 10, color: .red)
+                    RenderHighlightedRoom(context: context, theme: theme, trans: trans, contour: roomContour)
                 }
                 
-                //render path
-                if path.count > 0 {
-                    RenderPathIndicator(context: context, theme: theme, trans: trans, waypoints: path)
+                if let path = path {
+                    RenderPathIndicator(context: context, theme: theme, trans: trans, path: path)
                 }
-                
-                
+    
             }
             .background(theme.background)
             .gesture(DragGesture().onChanged { value in offset = Point2(x: value.translation.width, y: value.translation.height) }
@@ -165,79 +205,74 @@ struct MapOverlayView: View {
             }.onEnded { _ in base_scale *= scale; scale = 1.0 })
             
             // Zoom in/out buttons
-            if mode == .viewing
-            {
-                VStack {
-                    HStack {
-                        Spacer()
-                        VStack {
-                            Button(action: {
-                                centerMap()
-                            }) {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .foregroundColor(.white)
-                                    .font(.largeTitle)
-                                    .padding()
-                                    .background(Color.red)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 10)
-                            }
-                            
-                            Button(action: {
-                                scale *= 1.1
-                                base_scale *= 1.1
-                                
-                            }) {
-                                Image(systemName: "plus.magnifyingglass")
-                                    .font(.largeTitle)
-                                    .padding()
-                                    .background(Color.white)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 10)
-                            }
-                            
-                            
-                            Button(action: {
-                                scale *= 0.9
-                                base_scale *= 0.9
-                                
-                            }) {
-                                Image(systemName: "minus.magnifyingglass")
-                                    .font(.largeTitle)
-                                    .padding()
-                                    .background(Color.white)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 10)
-                            }
-                            
-                            Button(action: {
-                                self.localize()
-                            }) {
-                                Image(systemName: "location.circle")
-                                    .font(.largeTitle)
-                                    .padding()
-                                    .background(Color.white)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 10)
-                            }
-                            
-                            
-                            Spacer()
-                        }
-                        .padding(.trailing, 20)
-                    }
+            
+            VStack {
+                HStack {
                     Spacer()
-                    
-                }
-                .onChange(of: roomContourSet) { newValue in
-                    if newValue {
-                        // Perform action when roomContourSet is true
-                        centerMapOnRoomCentroid()
+                    VStack {
+                        Button(action: {
+                            centerMap()
+                        }) {
+                            Image(systemName: "mappin.and.ellipse")
+                                .foregroundColor(.white)
+                                .font(.largeTitle)
+                                .padding()
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .shadow(radius: 10)
+                        }
+                        
+                        Button(action: {
+                            scale *= 1.1
+                            base_scale *= 1.1
+                            
+                        }) {
+                            Image(systemName: "plus.magnifyingglass")
+                                .font(.largeTitle)
+                                .padding()
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 10)
+                        }
+                        
+                        
+                        Button(action: {
+                            scale *= 0.9
+                            base_scale *= 0.9
+                            
+                        }) {
+                            Image(systemName: "minus.magnifyingglass")
+                                .font(.largeTitle)
+                                .padding()
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 10)
+                        }
+                        
+                        Button(action: {
+                            self.localize()
+                        }) {
+                            Image(systemName: "location.circle")
+                                .font(.largeTitle)
+                                .padding()
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 10)
+                        }
+                        
+                        
+                        Spacer()
                     }
+                    .padding(.trailing, 20)
                 }
+                Spacer()
             }
         }
-        
+        .onChange(of: roomContour) { newValue in
+            if !newValue.isEmpty {
+                centerMapOnRoomCentroid()
+            }
+        }
     }
     
     func centerMapOnPos(centroid: Point2) {
@@ -275,7 +310,6 @@ struct MapOverlayView: View {
 }
 
 struct MapOverlay: View {
-    var room: String?
     @EnvironmentObject var buildingService: BuildingService
     @EnvironmentObject var locationService: LocalizerSession
     @EnvironmentObject var navigationService: NavigationSession
@@ -284,11 +318,6 @@ struct MapOverlay: View {
     @State private var floor: Floor?
     @State private var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
     @State private var roomContour: [Point2] = []
-    @State private var graph: UnweightedGraph<Point2>?
-    @State private var startPoint: Point3 = Point3(16.0, 12.0, 1.0)
-    @State private var endPoint: Point2 = Point2(16.0, 12.0)
-    @State private var stops: [Point2] = []
-    
     
     func loadMap() {
         
@@ -307,51 +336,6 @@ struct MapOverlay: View {
             
             let world_to_image = simd_inverse(image_to_world)
             
-            if let room = self.room { // Correctly binding to walkableAreas
-                let roomContour = floor.locations.first(where: { $0.label == room })?.contour ?? []
-                let endPoint = calculateCentroid(points: roomContour)
-                //let endPoint = Point2(47.0, 81.0)
-
-                //let walkable_areas = loadWalkableAreas(from: "walkable_areas") // Load your JSON file here
-                //print("Map loaded successfully")
-
-                print("hello3")
-                let width = 100 // Your map width in points
-                let height = 100 // Your map height in points
-                let graph = createGraph(from: floor, width: width, height: height)
-                var startPoint = Point2(startPoint.x, startPoint.y)
-                startPoint = findNearestPoint(from: startPoint, in: graph)!
-
-                if let endPoint = findNearestPoint(from: endPoint, in: graph) {
-                    //print(graph.description)
-                    let (distances, pathDict) = graph.dijkstra(root: startPoint, startDistance: 0)
-                    //print (pathDict)
-                    var nearestPoint: Point2? = nil
-                    var minDistance = Double.greatestFiniteMagnitude
-
-                    for (vertex, _) in pathDict {
-                        let currentPoint = graph.vertexAtIndex(vertex)
-                        let currentDistance = distance(currentPoint, endPoint)
-                        if currentDistance < minDistance {
-                            minDistance = currentDistance
-                            nearestPoint = currentPoint
-                        }
-                    }
-
-                    if let nearestPoint = nearestPoint {
-                        let endPointIndex = graph.indexOfVertex(nearestPoint)
-                        let path: [WeightedEdge<Double>] = pathDictToPath(from: graph.indexOfVertex(startPoint)!, to: endPointIndex!, pathDict: pathDict)
-                        let stops: [Point2] = graph.edgesToVertices(edges: path)
-                        self.stops = stops
-                    }
-
-                    DispatchQueue.main.async {
-                        self.roomContour = roomContour
-                        self.endPoint = endPoint
-                    }
-                }
-            }
-            
             DispatchQueue.main.async {
                 self.floor = floor
                 self.world_to_image = world_to_image
@@ -363,27 +347,12 @@ struct MapOverlay: View {
         })
     }
     
-    var title : String {
-        if let room = self.room {
-            return "Destination : \(room)"
-        } else {
-            return ""
-        }
-    }
-    
     var body: some View {
-            NavigationView {
-                MapOverlayView(theme: MapTheme(), floor: floor, pose: locationService.pose, path: stops, world_to_image: world_to_image, mode: mode, localize: { locationService.localize() }, roomContour: roomContour, endPoint: endPoint)
-                    .navigationBarTitle(title, displayMode: .inline)
-                    
-                    .onAppear {
-                        loadMap()
-                       
-                    }
-            }
-            .navigationViewStyle(StackNavigationViewStyle()) // Ensure the style is appropriate for your app
-            .navigationBarTitleDisplayMode(.inline) // Ensure the title is displayed inline
-            
-        }
+        /*NavigationView {*/
+        MapOverlayView(theme: MapTheme(), floor: floor, pose: locationService.pose, particles: locationService.public_particles, path : navigationService.nodePath, world_to_image: world_to_image, mode: mode, localize: { locationService.localize() }, roomContour: roomContour)
+            .onAppear(perform: loadMap)
+        /*.navigationViewStyle(StackNavigationViewStyle())
+        .navigationBarTitleDisplayMode(.inline)*/
+    }
 }
 
