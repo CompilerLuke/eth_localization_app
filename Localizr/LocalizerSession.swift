@@ -24,14 +24,14 @@ struct LocalizerResponse : Decodable {
 
 
 class LocalizationService {
-    func localize(image: UIImage, onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
+    func localize(image: UIImage, intrinsics: [Float], onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
         assert(false);
     }
 }
 
 class LocalizationServiceDevice : LocalizationService {
     let module : LocalizationModule?
-    let max_size : Int = 800
+    let max_size : Int = 600
     
     override init() {
         guard let path = Bundle.main.path(forResource: "model.pt", ofType: nil)
@@ -45,7 +45,7 @@ class LocalizationServiceDevice : LocalizationService {
     }
     
     
-    override func localize(image: UIImage, onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
+    override func localize(image: UIImage, intrinsics: [Float], onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
         guard let module = self.module
         else {
             onFailure("Could not initialize localization torch module")
@@ -53,37 +53,64 @@ class LocalizationServiceDevice : LocalizationService {
         }
         
         
-        guard let (buffer, width, height) = image.asFloatArray(max_size: max_size)
+        guard let (buffer, width, height, scale) = image.asFloatArray(max_size: max_size)
         else {
             onFailure("Could not get image array")
             return
         }
         
+        assert(intrinsics.count == 4)
         
-        func localizeWithRawImage(buffer: UnsafeBufferPointer<Float>) {
+        func localizeWithRawImage(buffer: UnsafeBufferPointer<Float>, buffer_intrinsics: UnsafeBufferPointer<Float>) {
             guard let baseAddress = buffer.baseAddress
             else {
                 onFailure("Image data is null")
                 return
             }
             
-            let result = module.localizeImage(baseAddress, width: Int32(width), height: Int32(height))
+            guard let intrinsics_baseAddress = buffer_intrinsics.baseAddress
+            else {
+                onFailure("Intrinsics are missing")
+                return
+            }
             
-            print("Localization result", result)
+            print("\(width)x\(height) Image ", intrinsics)
+            let result = module.localizeImage(baseAddress, width: Int32(width), height: Int32(height), intrinsics: intrinsics_baseAddress)
+            
+            print("Localization result for image", result)
             
             var poses : [LocalizerResponse.Pose] = []
             for pred in result {
-                let quat = Point4(x:Double(pred[1]),y:Double(pred[2]), z:Double(pred[3]),w:Double(pred[0]))
-                let pos = Point3(Double(pred[4]), Double(pred[5]), Double(pred[6]));
-                let score = pred[7];
+                if Double(pred[12]) < 0.01 {
+                    print("Ignoring score ", Double(pred[12]))
+                    continue
+                }
                 
-                poses.append(LocalizerResponse.Pose(score:Double(score), rot: quat, pos: pos))
+                let rot = Mat3(
+                    rows: [
+                        [Double(pred[0]),Double(pred[1]),Double(pred[2])],
+                        [Double(pred[3]),Double(pred[4]),Double(pred[5])],
+                        [Double(pred[6]),Double(pred[7]),Double(pred[8])]
+                    ]
+                )
+            
+                let quat = Quat(rot)
+                let pos = Point3(Double(pred[9]), Double(pred[10]), Double(pred[11]));
+                let score = pred[12];
+                
+                poses.append(LocalizerResponse.Pose(score:Double(score), rot: Point4(quat.imag.x,quat.imag.y,quat.imag.z,quat.real), pos: pos))
             }
             
-            onSuccess(LocalizerResponse(best_poses: poses))
+            if poses.count > 0 {
+                onSuccess(LocalizerResponse(best_poses: poses))
+            }
         }
         
-        buffer.withUnsafeBufferPointer(localizeWithRawImage)
+        let intrinsics = intrinsics.map { x in Float32(scale) * Float32(x) }
+        
+        intrinsics.withUnsafeBufferPointer({ buffer_intrinsics in
+            buffer.withUnsafeBufferPointer({ buffer in localizeWithRawImage(buffer: buffer, buffer_intrinsics: buffer_intrinsics)})
+        })
     }
 }
 
@@ -108,7 +135,7 @@ class LocalizationServiceHTTP : LocalizationService {
         return [:]
     }
     
-    override func localize(image: UIImage, onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
+    override func localize(image: UIImage, intrinsics: [Float], onSuccess: @escaping (LocalizerResponse) -> Void, onFailure: @escaping (String) -> Void) {
         let imageData = image.jpegData(compressionQuality: 1)!
         let mimeType = "image/jpeg" //imageData.mimeType!
 
@@ -198,7 +225,8 @@ class LocalizerSession : ObservableObject {
     var old_particles : [Particle] = []
     @Published var public_particles : [Pose] = []
     
-    weak var arView : ARView? = nil
+    private weak var arView : ARView? = nil
+    var intrinsics : [Float] = []
     var localizerService : LocalizationService
 
     var buildingService : BuildingService
@@ -232,6 +260,10 @@ class LocalizerSession : ObservableObject {
         var weight : Double
     }
     
+    func setArView(arView: ARView) {
+        self.arView = arView
+    }
+    
     func generateGaussian() -> Double {
         // Generate two uniformly distributed random numbers between 0 and 1
         let u1 = Double.random(in: 0..<1)
@@ -252,7 +284,7 @@ class LocalizerSession : ObservableObject {
         return atan2(p2.y, p2.x)
     }
             
-    init(localizationService : LocalizationService, buildingService: BuildingService, imu_update_interval : Double = 1.0/30) {
+    init(localizationService : LocalizationService, buildingService: BuildingService, imu_update_interval : Double = 1.0/15) {
         self.imu_update_interval = imu_update_interval
         self.localizerService = localizationService
         self.buildingService = buildingService
@@ -620,6 +652,6 @@ class LocalizerSession : ObservableObject {
             }
         }
         
-        self.localizerService.localize(image: image, onSuccess: on_localize, onFailure: on_failure)
+        self.localizerService.localize(image: image, intrinsics: intrinsics, onSuccess: on_localize, onFailure: on_failure)
     }
 }

@@ -56,6 +56,7 @@ struct CameraPage: View {
         }
         .onAppear {
             // Observe changes in the localization process to update the loading state and navigate
+            
             localizerSession.$pose
                 .receive(on: DispatchQueue.main)
                 .sink { newPose in
@@ -63,7 +64,6 @@ struct CameraPage: View {
                         isLoading = false
                         location = newPose.pos
                         shouldNavigate = true // Navigate to the destination page when the localization is done
-                        print("got reply")
                     }
                 }
                 .store(in: &cancellables)

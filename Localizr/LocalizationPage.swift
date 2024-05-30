@@ -14,18 +14,18 @@ struct LocalizationPage: View {
     @EnvironmentObject var theme: AppTheme
     @EnvironmentObject var localizerSession: LocalizerSession
     
-    @State private var isLoading: Bool = true
+    @State private var isLoading: Bool = false
     @State private var location: Point3?
+    @State private var cancellables = Set<AnyCancellable>()
     
     var floor: Floor?
     var path: [Point2] = []
     var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
 
     init( location: Point3? = nil) {
-          
-            self._location = State(initialValue: location)
-            self._isLoading = State(initialValue: location == nil)
-        }
+        self._location = State(initialValue: location)
+        self._isLoading = State(initialValue: location == nil)
+    }
 
     var body: some View {
         ZStack {
@@ -97,9 +97,19 @@ struct LocalizationPage: View {
                 }
             }
         }
-    
-                
-        
+        .onAppear {
+            // Observe changes in the localization process to update the loading state and navigate
+
+            localizerSession.$pose
+                .receive(on: DispatchQueue.main)
+                .sink { newPose in
+                    if let newPose = newPose {
+                        isLoading = false
+                        location = newPose.pos
+                    }
+                }
+                .store(in: &cancellables)
+        }
     }
 }
 

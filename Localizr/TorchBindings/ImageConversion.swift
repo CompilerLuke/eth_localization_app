@@ -24,7 +24,7 @@ extension UIImage {
         return nil
     }
     
-    func asFloatArray(max_size: Int) -> ([Float32], Int, Int)? {
+    func asFloatArray(max_size: Int) -> ([Float32], Int, Int, Double)? {
         guard let cgImage = self.getOrCreateGImage()
         else { return nil}
         
@@ -35,8 +35,9 @@ extension UIImage {
         
         var nw = w
         var nh = h
+        var scale = 1.0
         if max_dim > max_size {
-            let scale = Double(max_size) / Double(max(w,h))
+            scale = Double(max_size) / Double(max(w,h))
             nw = Int(Double(w) * scale)
             nh = Int(Double(h) * scale)
         }
@@ -62,6 +63,6 @@ extension UIImage {
             buffer[3*i + 1] = Float32(rawBytes[i * 4 + 1])
             buffer[3*i + 2] = Float32(rawBytes[i * 4 + 2])
         }
-        return (buffer, nw, nh)
+        return (buffer, nw, nh, scale)
     }
 }

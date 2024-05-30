@@ -55,6 +55,7 @@ struct NavigationMode: View {
                         // Toggle navigation mode
                         navigationMode = .navigating
                     }) {
+                        
                         Text("Start Navigation")
                             .foregroundColor(.white)
                             .padding()

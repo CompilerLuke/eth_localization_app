@@ -2,32 +2,34 @@
 //  HomePage.swift
 //  localizr
 //
-//  Created by Camilla Mazzoleni on 18/05/24.
+//  Created by Camilla Mazzoleni on 26/05/24.
 //
 
 import Foundation
 import SwiftUI
-
-
 struct HomePage: View {
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Welcome to HG, looking for?")
-                .font(.largeTitle)
-                .padding(.top, 50)
-                .frame(maxWidth: .infinity, alignment: .center)
-
+        VStack(spacing: 25) {
             Spacer()
             
-            CustomButtonView(imageName: "magnifyingglass.circle", text: "A specific room", destination: AnyView(RoomSearchPage()),backgroundColor: Color.white, iconColor: Color.blue)
+            Text("Welcome to HG!")
+                .font(.title3)
+                .padding(.top, 50)
+                .frame(maxWidth: .infinity, alignment: .center)
             
-            CustomButtonView(imageName: "building.2", text: "Attractions in the building", destination: AnyView(Text("Attractions Page")), backgroundColor: Color.white, iconColor: Color.blue)
+            Text("Looking for?")
+                .font(.largeTitle)
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .center)
+            
+            
+            CustomButtonView(imageName: "magnifyingglass.circle", text: "A specific room", destination: AnyView(RoomSearchPage()),backgroundColor: Color.blue.opacity(0.05), iconColor: Color.blue)
             
             
             
-            CustomButtonView(imageName: "graduationcap", text: "Classes of today", destination: AnyView(LessonsPage()), backgroundColor: Color.white, iconColor: Color.blue)
+            CustomButtonView(imageName: "graduationcap", text: "Classes of today", destination: AnyView(LessonsPage()), backgroundColor: Color.blue.opacity(0.05), iconColor: Color.blue)
             
-            CustomButtonView(imageName: "location.circle", text: "My location", destination: AnyView(CameraPage()), backgroundColor: Color.blue, iconColor: Color.white)
+            CustomButtonView(imageName: "location.circle", text: "My location", destination: AnyView(LocalizationPage()), backgroundColor: Color.blue, iconColor: Color.white)
             
             Spacer()
         }
@@ -42,5 +44,3 @@ struct HomePage_Previews: PreviewProvider {
         HomePage()
     }
 }
-
-

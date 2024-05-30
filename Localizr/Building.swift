@@ -15,19 +15,20 @@ extension Quat {
 }
 
 struct Location : Identifiable, Decodable {
-    var id : Int
+    var id : String { label }
     var label : String
-    var desc : String
+    //var desc : String
     var contour: [Point2]
 }
 
 struct Room : Identifiable, Decodable {
-    var id : Int = 0
+    var id : String { label }
     var label : String
-    var desc : String
+    //var desc : String = ""
     var contour: [Point2]
     //var type : Int
 }
+
 
 struct Floor : Decodable {
     var min: Point2

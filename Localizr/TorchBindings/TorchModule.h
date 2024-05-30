@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface LocalizationModule : TorchModule
-- (NSArray<NSArray<NSNumber*>*>*)localizeImage:(const float*) image width:(int) width height:(int) height NS_SWIFT_NAME(localizeImage(image:, width:, height:));
+- (NSArray<NSArray<NSNumber*>*>*)localizeImage:(const float*) image width:(int) width height:(int) height intrinsics:(const float*) intrinsics NS_SWIFT_NAME(localizeImage(image:, width:, height:, intrinsics));
 @end
 
 NS_ASSUME_NONNULL_END

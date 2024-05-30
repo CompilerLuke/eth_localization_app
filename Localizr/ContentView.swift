@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import RealityKit
+import ARKit
 
 struct LocalizeResponse : Decodable {
     var pos: Point3
@@ -73,13 +74,14 @@ struct LocalizeOverlay: UIViewRepresentable {
     @EnvironmentObject var localizerSession : LocalizerSession
     @EnvironmentObject var navigationSession : NavigationSession
     
+    @State var session_coordinator : CoordinatorARSession? = nil
     @State var anchor : AnchorEntity? = nil
     @State var arrow : ModelEntity? = nil
     @State var arrows_placed : [ModelEntity] = []
     
-    let path_spacing : Int = 3
+    let path_spacing : Int = 10
     let arrow_scale : Float = 0.002
-    let arrow_count = 20
+    let arrow_count = 10
     
     func updateArrows(nodePath: NavigationPath?) {
         guard let anchor : AnchorEntity = self.anchor else { return }
@@ -131,7 +133,8 @@ struct LocalizeOverlay: UIViewRepresentable {
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
-        localizerSession.arView = arView
+        
+        localizerSession.setArView(arView: arView)
         
         guard let arrow_url = Bundle.main.url(forResource: "arrow", withExtension: "usdc", subdirectory: "Assets3D")
         else {
@@ -145,7 +148,7 @@ struct LocalizeOverlay: UIViewRepresentable {
             return arView
         }
         
-        let material = SimpleMaterial(color: UIColor(red:1.0,green:1.0,blue:1.0,alpha:0.3), roughness: 1.00, isMetallic: false)
+        let material = SimpleMaterial(color: UIColor(red:0.6,green:0.6,blue:1.0,alpha:0.8), roughness: 1.00, isMetallic: false)
         arrow.model?.materials = [material]
         
         let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(1.0, 1.0)))
@@ -153,6 +156,7 @@ struct LocalizeOverlay: UIViewRepresentable {
     
         DispatchQueue.main.async {
             self.arrow = arrow
+            self.session_coordinator = CoordinatorARSession(session: localizerSession, arView: arView)
             self.anchor = anchor
             print("Set anchor to ", self.anchor, anchor)
         }
@@ -164,7 +168,46 @@ struct LocalizeOverlay: UIViewRepresentable {
         Coordinator(self)
     }
     
-    class Coordinator: NSObject {
+    class CoordinatorARSession : NSObject, ARSessionDelegate {
+        var session: LocalizerSession
+        var arView: ARView
+        
+        init(session: LocalizerSession, arView: ARView) {
+            self.session = session
+            self.arView = arView
+            
+            super.init()
+            arView.session.delegate = self
+                
+            // Set up AR session configuration
+            //let configuration = ARWorldTrackingConfiguration()
+            //arView.session.run(configuration)
+        }
+        
+        func session(_ session: ARSession, didUpdate frame: ARFrame) {
+            // Get the camera intrinsics from the current frame
+            let camera = frame.camera
+            let intrinsics = camera.intrinsics
+            
+            // The intrinsics matrix is a 3x3 matrix of type simd_float3x3
+            //print("Camera Intrinsics: \(intrinsics)")
+            
+            // Extract focal length and principal point
+            let focalLengthX = intrinsics.columns.0.x
+            let focalLengthY = intrinsics.columns.1.y
+            let principalPointX = intrinsics.columns.2.x
+            let principalPointY = intrinsics.columns.2.y
+            
+            self.session.intrinsics = [focalLengthY, focalLengthX, principalPointY, principalPointX]
+            
+            
+            
+            //print("Focal Length X: \(focalLengthX), Focal Length Y: \(focalLengthY)")
+            //print("Principal Point X: \(principalPointX), Principal Point Y: \(principalPointY)")
+        }
+    }
+    
+    class Coordinator: NSObject, ARSessionDelegate {
         private var cancellable: AnyCancellable?
         
         init(_ parent: LocalizeOverlay) {

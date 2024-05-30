@@ -35,7 +35,7 @@ struct MapTheme {
     var building: Color = Color(red: 0.95, green: 0.95, blue: 0.95)
     var rooms: Color = Color(red: 0.9, green: 0.9, blue: 1.0)
     var background: Color = Color(red: 0.9, green: 0.9, blue: 0.9)
-    var highlighted: Color = Color(red: 0.9, green: 1.0, blue: 0.9)
+    var highlighted: Color = Color(red: 0.7, green: 0.7, blue: 1.0)
     var indicator_radius: CGFloat = 30
     var particle_radius: Double = 5
     var path_thickness: Double = 5
@@ -90,33 +90,46 @@ func Polygon(trans: Mat3, points: [Point2], close: Bool = true) -> Path {
 
 func RenderPathIndicator(context: GraphicsContext, theme: MapTheme, trans: Mat3, path: NavigationPath, thickness: CGFloat = 2, stroke: Color = .red) {
     let waypoints = path.path.map { node in Point2(node.pos.x, node.pos.y) }
-    let stride = 10
+    let stride = 8
     
     context.stroke(Path { path in
         path.move(to: to_cg(trans, waypoints[0]))
         
         var i = stride
-        while i+stride < waypoints.count {
-            let point0 = waypoints[i-stride]
+        while i < waypoints.count {
+            /*let point0 = waypoints[i-stride]
             let point1 = waypoints[i]
             let point2 = waypoints[i+stride]
             
             let control1 = point0
             let point = point1
             let control2 = point1 - (point2-point1)
-  
-            path.addCurve(to: to_cg(trans, point), control1: to_cg(trans, control1), control2: to_cg(trans, control2))
-            i += 2*stride
+            */
+            path.addLine(to: to_cg(trans,waypoints[i]))
+            //.addCurve(to: to_cg(trans, point), control1: to_cg(trans, control1), control2: to_cg(trans, control2))
+            i += stride
         }
-        
+        if let last = waypoints.last {
+            path.addLine(to: to_cg(trans,last))
+        }
     }, with: .color(theme.path), lineWidth: theme.path_thickness)
 }
 
 func RenderFloor(context: GraphicsContext, theme: MapTheme, trans: Mat3, floor: Floor) {
     let scale = trans[0][0]
+    
     let building = Polygon(trans: trans, points: floor.outline)
     context.fill(building, with: .color(theme.building))
     context.stroke(building, with: .color(theme.border), lineWidth: 1.0 * scale)
+    
+    for area in floor.walkable_areas {
+        let points = area.map { coord in
+            Point2(coord[0], coord[1])
+        }
+        let walkable_render = Polygon(trans: trans, points: points)
+        context.fill(walkable_render, with: .color(Color(red: 0.9, green: 1.0, blue: 0.9)))
+    }
+    
     
     for room in floor.locations {
         let min = apply_transform(trans, room.contour.reduce(Point2(1e10, 1e10), simd_min))
@@ -170,13 +183,7 @@ struct MapOverlayView: View {
                 
                 if let fl = floor {
                     RenderFloor(context: context, theme: theme, trans: trans, floor: fl)
-                    for area in fl.walkable_areas {
-                        let points = area.map { coord in
-                            Point2(coord[0], coord[1])
-                        }
-                        let walkable_render = Polygon(trans: trans, points: points)
-                        context.fill(walkable_render, with: .color(Color.white))
-                    }
+                    
                 }
             
                 RenderParticles(context: context, theme: theme, trans: trans, particles: particles)
@@ -194,6 +201,9 @@ struct MapOverlayView: View {
                     RenderPathIndicator(context: context, theme: theme, trans: trans, path: path)
                 }
     
+            }
+            .onChange(of: floor?.locations.count) {
+                self.centerMap()
             }
             .background(theme.background)
             .gesture(DragGesture().onChanged { value in offset = Point2(x: value.translation.width, y: value.translation.height) }
@@ -317,7 +327,7 @@ struct MapOverlay: View {
     @State private var isLoading: Bool = false
     @State private var floor: Floor?
     @State private var world_to_image: Mat3 = Mat3(diagonal: Point3(1, 1, 1))
-    @State private var roomContour: [Point2] = []
+    //@State private var roomContour: [Point2] = []
     
     func loadMap() {
         
@@ -345,6 +355,16 @@ struct MapOverlay: View {
             self.isLoading = false
             print("Failed to load floor map: \(error)")  // Debug statement
         })
+    }
+    
+    var roomContour : [Point2] {
+        var roomContour : [Point2] = []
+        if case let .destinationRoom(label, center) = navigationService.mode {
+            if let floor = self.floor {
+                roomContour = floor.locations.filter({ room in (room.label == label) }).flatMap({ room in room.contour })
+            }
+        }
+        return roomContour
     }
     
     var body: some View {

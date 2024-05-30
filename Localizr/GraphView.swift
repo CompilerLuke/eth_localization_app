@@ -40,11 +40,52 @@ func createGraph(from floor: Floor, width: Int, height: Int) -> WeightedGraph<Po
     
     var nodes: [[Point2?]] = Array(repeating: Array(repeating: nil, count: width), count: height)
     
-    let delta = (floor.max - floor.min) / Point2(Double(width),Double(height))
+    let delta = Point2(x: 1.0/Double(width), y:1.0/Double(height))
+    //(floor.max - floor.min) / Point2(Double(width),Double(height))
+    
+    let floor_to_relative = Mat3(rows: [
+      [
+        -0.37980244230776083,
+        -0.4446899053418908,
+        0.9360045227534673
+      ],
+      [
+        0.5777596438092669,
+        -0.24931580397943037,
+        0.5088500153185898
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ])
+    let relative_to_absolute = Mat3(rows: [
+      [
+        259.284,
+        0.0,
+        -148.161
+      ],
+      [
+        0.0,
+        -279.09479999999996,
+        189.154
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ])
+    
+    let to_world = relative_to_absolute * floor_to_relative
     
     for i in 0..<height {
         for j in 0..<width {
-            let point = Point2(Double(j) * delta.x + floor.min.x, Double(i) * delta.y + floor.min.y)
+            let space = Point2(Double(j) * delta.x, Double(i) * delta.y)
+            let point_h = to_world * Point3(space.x,space.y,1.0)
+            let point = Point2(point_h.x,point_h.y)
+            
             let inside = floor.walkable_areas.contains { area in
                 isPointInsidePolygon(point: point, polygon: area.map { Point2($0[0], $0[1]) })
             }

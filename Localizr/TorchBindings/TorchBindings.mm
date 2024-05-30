@@ -42,13 +42,14 @@ NSData *getImageBuffer(UIImage *image) {
 
 @implementation LocalizationModule
 
-- (NSArray<NSArray<NSNumber*>*>*)localizeImage:(const float*)image width:(int)width height:(int)height {
+- (NSArray<NSArray<NSNumber*>*>*)localizeImage:(const float*)image width:(int)width height:(int)height intrinsics:(const float*)intrinsics {
   try {
     at::Tensor tensor = torch::from_blob((float*)image, {height, width, 3}, at::kFloat);
+    at::Tensor tensor_intrinsics = torch::from_blob((float*)intrinsics, {4}, at::kFloat);
     tensor = tensor.transpose(0,1);
     torch::autograd::AutoGradMode guard(false);
     c10::InferenceMode mode(true);
-    auto outputTensor = _impl.forward({tensor}).toTensor();
+    auto outputTensor = _impl.forward({tensor, tensor_intrinsics}).toTensor();
     float* floatBuffer = outputTensor.data_ptr<float>();
     if (!floatBuffer) {
       return nil;
